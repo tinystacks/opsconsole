@@ -1,0 +1,11 @@
+Console:
+  name: TinyStacks example 1
+  pages:
+    MainPage:
+      route: /
+      widgets: 
+        - $ref: '#/Console/widgets/HelloWorldMarkdown'
+  widgets:
+    HelloWorldMarkdown:
+      type: "Markdown"
+      displayName: Hello World!
