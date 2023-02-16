@@ -3,9 +3,9 @@ import path from 'path';
 import logger from '../../logger';
 
 function init () {
-  const example = fs.readFileSync(path.join(__dirname, '../../../', 'example.yml'));
-  const dirname = './example.yml';
   try { 
+    const example = fs.readFileSync(path.join(__dirname, '../../../', 'example.yml'));
+    const dirname = './example.yml';
     fs.writeFileSync(dirname, example);
     logger.success('Example template successfully created!');
   } catch (e) {
