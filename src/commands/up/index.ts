@@ -8,7 +8,7 @@ async function up () {
       'docker pull 849087520365.dkr.ecr.us-east-1.amazonaws.com/ops-api',
       'docker container stop ops-api || true',
       'docker container rm ops-api || true',
-      'docker run --name ops-api -v $HOME/.aws:/root/.aws -v $(pwd):/config --env CONFIG_PATH="../config/example2.yml" -i -p 8000:8000 "849087520365.dkr.ecr.us-east-1.amazonaws.com/ops-api";'
+      'docker run --name ops-api -v $HOME/.aws:/root/.aws -v $(pwd):/config --env CONFIG_PATH="../config/example.yml" -i -p 8000:8000 "849087520365.dkr.ecr.us-east-1.amazonaws.com/ops-api";'
     ].join(';\n');
     await runCommand(commands);
     // logger.success('Ops console servers successfully launched!\nBackend running on http://localhost:8000.');
