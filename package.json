@@ -7,7 +7,8 @@
     "opsconsole-cli": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "example.yml"
   ],
   "scripts": {
     "build": "tsc",
