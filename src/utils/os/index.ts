@@ -1,8 +1,8 @@
-import { exec, ExecOptions } from "child_process";
-import logger from "../../logger";
-import { OsOutput } from "../../types";
+import { exec, ExecOptions } from 'child_process';
+import logger from '../../logger';
+import { OsOutput } from '../../types';
 
-export async function runCommand(command: string, opts?: ExecOptions): Promise<OsOutput> {
+export async function runCommand (command: string, opts?: ExecOptions): Promise<OsOutput> {
   return new Promise((resolve, reject) => {
     try {
       // we "return await" here so that errors can be handled within this function to execute retry logic
