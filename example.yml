@@ -1,10 +1,12 @@
+
+
 Console:
   name: TinyStacks example
   providers:
     AwsLocalProvider:
-      type: AwsCredentialsProvider
+      type: AwsProfileProvider
       credentials:
-        profileName: ts
+        profileName: ts-dev
   pages:
     MainPage:
       route: /
@@ -32,6 +34,7 @@ Console:
       region: us-east-1
     MainPageTabPanel:
       type: "TabPanel"
+      displayName: Service Logs
       provider: 
         $ref: '#/Console/providers/AwsLocalProvider'
       tabs:
@@ -73,6 +76,7 @@ Console:
       tabbedView: false
     SynthEcsServiceDeployments_3:
       type: "AwsCloudWatchAlarmsStatus"
+      displayName: Service Logs
       alarmIds:
         - cpu-over
         - out-of-mem
