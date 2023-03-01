@@ -1,1 +1,1 @@
-# open-source-template
+# ops-cli

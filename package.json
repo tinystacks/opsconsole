@@ -1,10 +1,14 @@
 {
-  "name": "",
+  "name": "@tinystacks/ops-cli",
   "version": "0.0.0",
   "description": "",
   "main": "dist/index.js",
+  "bin": {
+    "opsconsole-cli": "./dist/index.js"
+  },
   "files": [
-    "dist"
+    "dist",
+    "example.yml"
   ],
   "scripts": {
     "build": "tsc",
@@ -49,5 +53,9 @@
     "lodash.isempty": "^4.4.0",
     "ts-jest": "^29.0.5",
     "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "colors": "^1.4.0",
+    "commander": "^10.0.0"
   }
 }
