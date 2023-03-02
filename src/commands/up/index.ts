@@ -1,6 +1,9 @@
 import logger from '../../logger';
 import { runCommand } from '../../utils/os';
 
+const backendSuccessIndicator = 'Running on http://localhost:8000';
+const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
+
 function runBackend () {
   try {
     const commands = [
@@ -12,7 +15,7 @@ function runBackend () {
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
-      if (data.includes('Running on http://localhost:8000')) { 
+      if (data.includes(backendSuccessIndicator)) { 
         logger.success('Ops console backend successfully launched');
       }
     });
@@ -32,7 +35,7 @@ function runFrontend () {
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
-      if (data.includes('ready - started server on 0.0.0.0:3000')) { 
+      if (data.includes(frontendSuccessIndicator)) { 
         logger.success('Ops console frontend successfully launched');
       }
     });
