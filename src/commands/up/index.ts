@@ -12,9 +12,8 @@ function runBackend () {
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
-      if (data.startsWith('Running')) { 
+      if (data.includes('Running on http://localhost:8000')) { 
         logger.success('Ops console backend successfully launched');
-        runFrontend();
       }
     });
   } catch (e) {
@@ -33,7 +32,7 @@ function runFrontend () {
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
-      if (data.startsWith('ready')) { 
+      if (data.includes('ready - started server on 0.0.0.0:3000')) { 
         logger.success('Ops console frontend successfully launched');
       }
     });
@@ -44,6 +43,7 @@ function runFrontend () {
 
 async function up () {
   runBackend();
+  runFrontend();
 }
 
 export {
