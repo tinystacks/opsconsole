@@ -11,9 +11,9 @@ Console:
       id: MainPage
       route: main
       widgets:
-        # - $ref: '#/Console/widgets/SmallMarkdown'
-        # - $ref: '#/Console/widgets/MdTabs'
-        - $ref: '#/Console/widgets/BasicMarkdown'
+        - $ref: '#/Console/widgets/SmallMarkdown'
+        - $ref: '#/Console/widgets/MdTabs'
+        # - $ref: '#/Console/widgets/BasicMarkdown'
   widgets:
     MdTabs:
       type: Tabs
