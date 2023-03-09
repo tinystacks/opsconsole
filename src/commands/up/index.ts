@@ -13,7 +13,7 @@ function startNetwork () {
     ].join('\n');
     runCommand(commands);
   } catch (e) {
-    logger.error(`Error launching ops console servers: ${e}`);
+    logger.error(`Error launching ops console network: ${e}`);
   }
 }
 
