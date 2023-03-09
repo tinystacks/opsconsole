@@ -1,1 +1,2 @@
-- added docker network to run backend and frontend
+- Switch to public images
+- Make architecture selection optional and explicit
