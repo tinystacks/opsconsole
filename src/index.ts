@@ -27,6 +27,7 @@ try {
 
   program.command('up')
     .description('Deploys ops console on local servers')
+    .option('--arm', 'Runs ops servers using ARM images')
     .action(up);
 
   program.command('deploy')
