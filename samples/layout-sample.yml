@@ -36,7 +36,7 @@ Console:
         - $ref: '#/Console/widgets/Md2'
     SmallMarkdown:
       type: Markdown
-      displayName: A smaller markdown window
+      displayName: Small Markdown Window
       text: Well well well what we've got here is some downright straightforward markdown
       markdown: >
         ### This is fully supported markdown
@@ -46,13 +46,13 @@ Console:
         ```
     Md1:
       type: Markdown
-      displayName: A smaller markdown window
+      displayName: Tiny Markdown 1
       markdown: >
         Just one small markdown window.
         You can stack these in tabs
     Md2:
       type: Markdown
-      displayName: A smaller markdown window
+      displayName: Tiny Markdown 2
       markdown: >
         More markdown. You can also keep widgets in panels. 
 
