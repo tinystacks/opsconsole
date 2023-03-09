@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import * as colors from 'colors';
 import { init, up, deploy } from './commands';
 import logger from './logger';
@@ -27,7 +27,7 @@ try {
 
   program.command('up')
     .description('Deploys ops console on local servers')
-    .option('--arm', 'Runs ops servers using ARM images')
+    .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86.  Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
     .action(up);
 
   program.command('deploy')

@@ -1,3 +1,5 @@
+export type ImageArchitecture = 'arm' | 'x86';
+
 export interface UpOptions {
-  arm?: boolean
+  arch?: ImageArchitecture;
 }
