@@ -1,1 +1,1 @@
-Small patch for logging in up command
+- added docker network to run backend and frontend
