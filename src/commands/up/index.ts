@@ -23,7 +23,7 @@ function runBackend (tag?: string) {
       `docker pull public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}`,
       'docker container stop ops-api || true',
       'docker container rm ops-api || true',
-      `docker run --name ops-api -v $HOME/.aws:/root/.aws -v $(pwd):/config --env CONFIG_PATH="../config/example.yml" -i -p 8000:8000 --network=ops-console "public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}";`
+      `docker run --name ops-api -v $HOME/.aws:/root/.aws -v $(pwd):/config --env CONFIG_PATH="../config/config.yml" -i -p 8000:8000 --network=ops-console "public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}";`
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
