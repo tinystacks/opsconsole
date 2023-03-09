@@ -2,8 +2,7 @@ Console:
   name: console
   providers: {}
   dashboards:
-    MainDashboard:
-      id: MainDashboard
+    LayoutDashboard:
       route: main
       widgets:
         - $ref: '#/Console/widgets/SmallMarkdown'
