@@ -1,6 +1,8 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import logger from '../../logger';
 import { runCommand } from '../../utils/os';
-import { UpOptions } from '../types';
+import { UpOptions } from '../../types';
 
 const backendSuccessIndicator = 'Running on http://localhost:8000';
 const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
@@ -17,13 +19,13 @@ function startNetwork () {
   }
 }
 
-function runBackend (tag?: string) {
+function runBackend (tag?: string, dir?: string, file?: string) {
   try {
     const commands = [
       `docker pull public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}`,
       'docker container stop ops-api || true',
       'docker container rm ops-api || true',
-      `docker run --name ops-api -v $HOME/.aws:/root/.aws -v $(pwd):/config --env CONFIG_PATH="../config/example.yml" -i -p 8000:8000 --network=ops-console "public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}";`
+      `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console "public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}";`
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
@@ -55,18 +57,60 @@ function runFrontend (tag?: string) {
   }
 }
 
-async function up (options: UpOptions) {
-  startNetwork();
-  const { arch } = options;
-  // Don't pass along invalid image architectures.
-  let tag;
-  if (arch === 'arm') {
-    tag = 'arm';
-  } else if (arch === 'x86') {
-    tag = 'x86';
+/* For future use (defaulting tag)
+async function validateArchitecture (arch: string) {
+  // process.arch gives varying results
+  if (!arch) {
+    const process = runCommand('uname -p');
+    const systemArch = await streamToString(process.stdout);
+    switch (systemArch) {
+      case 'x86_64':
+        return ImageArchitecture.x86
+      case 'arm':
+        return ImageArchitecture.ARM
+      case 'arm64':
+        return ImageArchitecture.ARM
+      case 'aarch64':
+        return ImageArchitecture.ARM
+      default:
+        throw new Error(`ops does not currently support ${arch}`);
+    }
   }
-  runBackend(tag);
-  runFrontend(tag);
+  return arch;
+}
+*/
+
+function validateConfigFilePath (configFile: string) {
+  if (!configFile) {
+    return {
+      dir: process.cwd(),
+      file: 'example.yml'
+    };
+  }
+  const absolutePath = path.resolve(configFile);
+  if (fs.existsSync(absolutePath)) {
+    return {
+      dir: path.dirname(absolutePath),
+      file: path.basename(absolutePath)
+    };
+  }
+  throw new Error(`Specified config file ${configFile} does not exist`);
+}
+
+async function up (options: UpOptions) {
+  const { 
+    arch, 
+    configFile
+  } = options;
+  try {
+    const { dir, file } = validateConfigFilePath(configFile);
+    startNetwork();
+    runBackend(arch, dir, file);
+    runFrontend(arch);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'An unknown error occurred';
+    logger.error(message);
+  }
 }
 
 export {
