@@ -100,7 +100,6 @@ async function up (options: UpOptions) {
   try {
     const { dir, file } = validateConfigFilePath(configFile);
     const tag = validateArchitecture(arch);
-    console.log(tag);
     startNetwork();
     runBackend(tag, dir, file);
     runFrontend(tag);
