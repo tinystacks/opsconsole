@@ -61,16 +61,12 @@ function runFrontend (tag?: string) {
 async function validateArchitecture (arch: string) {
   // process.arch gives varying results
   if (!arch) {
-    const process = runCommand('uname -p');
-    const systemArch = await streamToString(process.stdout);
-    switch (systemArch) {
-      case 'x86_64':
+    switch (process.arch) {
+      case 'x64':
         return ImageArchitecture.x86
       case 'arm':
         return ImageArchitecture.ARM
       case 'arm64':
-        return ImageArchitecture.ARM
-      case 'aarch64':
         return ImageArchitecture.ARM
       default:
         throw new Error(`ops does not currently support ${arch}`);
