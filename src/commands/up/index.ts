@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import logger from '../../logger';
 import { runCommand } from '../../utils/os';
-import { UpOptions } from '../../types';
+import { ImageArchitecture, UpOptions } from '../../types';
 
 const backendSuccessIndicator = 'Running on http://localhost:8000';
 const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
@@ -57,24 +57,23 @@ function runFrontend (tag?: string) {
   }
 }
 
-/* For future use (defaulting tag)
-async function validateArchitecture (arch: string) {
-  // process.arch gives varying results
-  if (!arch) {
-    switch (process.arch) {
-      case 'x64':
-        return ImageArchitecture.x86
-      case 'arm':
-        return ImageArchitecture.ARM
-      case 'arm64':
-        return ImageArchitecture.ARM
-      default:
-        throw new Error(`ops does not currently support ${arch}`);
-    }
+function validateArchitecture (arch: string) {
+  if (arch) {
+    return arch;
   }
-  return arch;
+  switch (process.arch) {
+    case 'x64':
+      return ImageArchitecture.x86;
+    case 'ia32':
+      return ImageArchitecture.x86;
+    case 'arm':
+      return ImageArchitecture.ARM;
+    case 'arm64':
+      return ImageArchitecture.ARM;
+    default:
+      throw new Error(`ops does not currently support ${arch}`);
+  }
 }
-*/
 
 function validateConfigFilePath (configFile: string) {
   if (!configFile) {
@@ -100,9 +99,11 @@ async function up (options: UpOptions) {
   } = options;
   try {
     const { dir, file } = validateConfigFilePath(configFile);
+    const tag = validateArchitecture(arch);
+    console.log(tag);
     startNetwork();
-    runBackend(arch, dir, file);
-    runFrontend(arch);
+    runBackend(tag, dir, file);
+    runFrontend(tag);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'An unknown error occurred';
     logger.error(message);
