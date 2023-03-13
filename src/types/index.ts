@@ -8,4 +8,4 @@ export interface UpOptions {
   configFile?: string;
 }
 
-export const CONFIG_FILE = 'config.yml';
+export const DEFAULT_CONFIG_FILENAME = 'config.yml';
