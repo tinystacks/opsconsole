@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import logger from '../../logger';
 import { runCommand } from '../../utils/os';
-import { ImageArchitecture, UpOptions } from '../../types';
+import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types';
 
 const backendSuccessIndicator = 'Running on http://localhost:8000';
 const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
@@ -76,7 +76,7 @@ function validateArchitecture (arch: string) {
 }
 
 function validateConfigFilePath (configFile: string) {
-  const absolutePath = path.resolve(configFile || `${process.cwd()}/example.yml`);
+  const absolutePath = path.resolve(configFile || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
   if (fs.existsSync(absolutePath)) {
     return {
       dir: path.dirname(absolutePath),
