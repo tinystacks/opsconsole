@@ -8,7 +8,7 @@
   },
   "files": [
     "dist",
-    "example.yml"
+    "samples"
   ],
   "scripts": {
     "build": "tsc",
