@@ -76,20 +76,14 @@ function validateArchitecture (arch: string) {
 }
 
 function validateConfigFilePath (configFile: string) {
-  if (!configFile) {
-    return {
-      dir: process.cwd(),
-      file: 'example.yml'
-    };
-  }
-  const absolutePath = path.resolve(configFile);
+  const absolutePath = path.resolve(configFile || `${process.cwd()}/example.yml`);
   if (fs.existsSync(absolutePath)) {
     return {
       dir: path.dirname(absolutePath),
       file: path.basename(absolutePath)
     };
   }
-  throw new Error(`Specified config file ${configFile} does not exist`);
+  throw new Error(`Specified config file ${absolutePath} does not exist.`);
 }
 
 async function up (options: UpOptions) {
