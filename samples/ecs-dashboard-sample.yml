@@ -1,0 +1,266 @@
+Console:
+  name: console
+  providers:
+    AwsLocalProvider:
+      id: AwsLocalProvider
+      type: AwsCredentialsProvider
+      credentials:
+        profileName: ts
+  dashboards:
+    EcsDashboard:
+      id: EcsDashboard
+      route: main
+      widgets:
+        - $ref: '#/Console/widgets/EcsInfo'
+        - $ref: '#/Console/widgets/EcsDeployments'
+        - $ref: '#/Console/widgets/MetricsTabs'
+        - $ref: '#/Console/widgets/Logs'
+
+  widgets:
+    EcsInfo:
+      type: AwsEcsInfo
+      displayName: Service Information
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      region: us-east-1
+      clusterName: cdk-synth-cluster
+      serviceName: tinystacks-service
+    EcsDeployments:
+      type: AwsEcsDeployments
+      displayName: Service Deployments
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      clusterName: 
+        $ref: '#/Console/provider/EcsInfo'
+        path: clusterName
+      serviceName:
+        $ref: '#/Console/provider/EcsInfo'
+        path: serviceName
+    Logs:
+      type: AwsCloudWatchLogs
+      displayName: Service Logs
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      logGroupName: 
+        $ref: '#/Console/widgets/EcsInfo'
+        path: images[0].cwLogsGroupArn
+      timeRange:
+        time: 12
+        unit: h
+    MetricsTabs:
+      type: Tabs
+      displayName: Metrics
+      children:
+        - $ref: '#/Console/widgets/SummaryMetrics'
+        - $ref: '#/Console/widgets/DetailedMetrics'
+      tabNames:
+        - 'Summary'
+        - 'Details'
+    SummaryMetrics:
+      type: AwsCloudWatchMetricGraph
+      displayName: Summary Metrics
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/ECS
+          metricName: CPUUtilization
+          metricDisplayName: 'CPU Utilization'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+        - metricNamespace: AWS/ECS
+          metricName: MemoryUtilization
+          metricDisplayName: 'Memory Utilization'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+    DetailedMetrics:
+      type: Grid
+      displayName: Detailed Metrics
+      orientation: horizontal
+      children:
+        - $ref: '#/Console/widgets/CPUMetrics'
+        - $ref: '#/Console/widgets/MemoryMetrics'
+        - $ref: '#/Console/widgets/Capacity'
+        - $ref: '#/Console/widgets/Reservations'
+    CPUMetrics:
+      type: AwsCloudWatchMetricGraph
+      displayName: CPU Utilization Details
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/ECS
+          metricName: CPUUtilization
+          metricDisplayName: 'Average'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+        - metricNamespace: AWS/ECS
+          metricName: CPUUtilization
+          metricDisplayName: 'Max'
+          statistic: Maximum
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+        - metricNamespace: AWS/ECS
+          metricName: CPUUtilization
+          metricDisplayName: 'Min'
+          statistic: Minimum
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+
+    MemoryMetrics:
+      type: AwsCloudWatchMetricGraph
+      displayName: Memory Utilization Details
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/ECS
+          metricName: MemoryUtilization
+          metricDisplayName: 'Average'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+        - metricNamespace: AWS/ECS
+          metricName: MemoryUtilization
+          metricDisplayName: 'Max'
+          statistic: Maximum
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+        - metricNamespace: AWS/ECS
+          metricName: MemoryUtilization
+          metricDisplayName: 'Min'
+          statistic: Minimum
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+
+    Capacity:
+      type: AwsCloudWatchMetricGraph
+      displayName: Capacity
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: ECS/ContainerInsights
+          metricName: RunningTaskCount
+          metricDisplayName: 'Running Tasks'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+        - metricNamespace: ECS/ContainerInsights
+          metricName: PendingTaskCount
+          metricDisplayName: 'Pending Tasks'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+        - metricNamespace: ECS/ContainerInsights
+          metricName: DesiredTaskCount
+          metricDisplayName: 'Desired Tasks'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+    Reservations:
+      type: AwsCloudWatchMetricGraph
+      displayName: Resource Reservations
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: ECS/ContainerInsights
+          metricName: CpuReserved
+          metricDisplayName: 'Reserved CPU'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+        - metricNamespace: ECS/ContainerInsights
+          metricName: MemoryReserved
+          metricDisplayName: 'Memory Reserved'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: cdk-synth-cluster
+            - key: ServiceName
+              value: tinystacks-service
+  dependencies:
+    Tabs: '@tinystacks/ops-core-widgets'
+    Grid: '@tinystacks/ops-core-widgets'
+    AwsCloudWatchLogs:        '@tinystacks/ops-aws-core-plugins'
+    AwsCredentialsProvider:   '@tinystacks/ops-aws-core-plugins'
+    AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-plugins'
+    AwsEcsInfo:               '@tinystacks/ops-aws-core-plugins'
+    AwsEcsDeployments:        '@tinystacks/ops-aws-core-plugins'
+    AwsCli:                   '@tinystacks/ops-aws-core-plugins'
