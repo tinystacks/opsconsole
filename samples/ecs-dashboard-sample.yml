@@ -81,18 +81,26 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
         - metricNamespace: AWS/ECS
           metricName: MemoryUtilization
           metricDisplayName: 'Memory Utilization'
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
     DetailedMetrics:
       type: Grid
       displayName: Detailed Metrics
@@ -121,27 +129,39 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
         - metricNamespace: AWS/ECS
           metricName: CPUUtilization
           metricDisplayName: 'Max'
           statistic: Maximum
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
         - metricNamespace: AWS/ECS
           metricName: CPUUtilization
           metricDisplayName: 'Min'
           statistic: Minimum
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
 
     MemoryMetrics:
       type: AwsCloudWatchMetricGraph
@@ -162,27 +182,39 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
         - metricNamespace: AWS/ECS
           metricName: MemoryUtilization
           metricDisplayName: 'Max'
           statistic: Maximum
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
         - metricNamespace: AWS/ECS
           metricName: MemoryUtilization
           metricDisplayName: 'Min'
           statistic: Minimum
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
 
     Capacity:
       type: AwsCloudWatchMetricGraph
@@ -203,27 +235,39 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
         - metricNamespace: ECS/ContainerInsights
           metricName: PendingTaskCount
           metricDisplayName: 'Pending Tasks'
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
         - metricNamespace: ECS/ContainerInsights
           metricName: DesiredTaskCount
           metricDisplayName: 'Desired Tasks'
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
     Reservations:
       type: AwsCloudWatchMetricGraph
       displayName: Resource Reservations
@@ -243,18 +287,27 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
         - metricNamespace: ECS/ContainerInsights
           metricName: MemoryReserved
           metricDisplayName: 'Memory Reserved'
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: cdk-synth-cluster
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
             - key: ServiceName
-              value: tinystacks-service
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+
   dependencies:
     Tabs: '@tinystacks/ops-core-widgets'
     Grid: '@tinystacks/ops-core-widgets'
