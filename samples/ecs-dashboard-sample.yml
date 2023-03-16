@@ -5,7 +5,7 @@ Console:
       id: AwsLocalProvider
       type: AwsCredentialsProvider
       credentials:
-        profileName: ts
+        profileName: default
   dashboards:
     EcsDashboard:
       id: EcsDashboard
@@ -13,9 +13,9 @@ Console:
       widgets:
         - $ref: '#/Console/widgets/EcsInfo'
         - $ref: '#/Console/widgets/EcsDeployments'
-        - $ref: '#/Console/widgets/MetricsTabs'
+        - $ref: '#/Console/widgets/Metrics'
         - $ref: '#/Console/widgets/Logs'
-
+        - $ref: '#/Console/widgets/UsefulCommands'
   widgets:
     EcsInfo:
       type: AwsEcsInfo
@@ -53,57 +53,9 @@ Console:
       timeRange:
         time: 12
         unit: h
-    MetricsTabs:
-      type: Tabs
-      displayName: Metrics
-      children:
-        - $ref: '#/Console/widgets/SummaryMetrics'
-        - $ref: '#/Console/widgets/DetailedMetrics'
-      tabNames:
-        - 'Summary'
-        - 'Details'
-    SummaryMetrics:
-      type: AwsCloudWatchMetricGraph
-      displayName: Summary Metrics
-      region:
-        $ref: '#/Console/widgets/EcsInfo'
-        path: region
-      period: 300
-      providers:
-        - $ref: '#/Console/providers/AwsLocalProvider'
-      timeRange:
-        time: 1
-        unit: h
-      metrics:
-        - metricNamespace: AWS/ECS
-          metricName: CPUUtilization
-          metricDisplayName: 'CPU Utilization'
-          statistic: Average
-          dimensions:
-            - key: ClusterName
-              value: 
-                $ref: '#/Console/widgets/EcsInfo'
-                path: clusterName
-            - key: ServiceName
-              value: 
-                $ref: '#/Console/widgets/EcsInfo'
-                path: serviceName
-        - metricNamespace: AWS/ECS
-          metricName: MemoryUtilization
-          metricDisplayName: 'Memory Utilization'
-          statistic: Average
-          dimensions:
-            - key: ClusterName
-              value: 
-                $ref: '#/Console/widgets/EcsInfo'
-                path: clusterName
-            - key: ServiceName
-              value: 
-                $ref: '#/Console/widgets/EcsInfo'
-                path: serviceName
-    DetailedMetrics:
+    Metrics:
       type: Grid
-      displayName: Detailed Metrics
+      displayName: ECS Metrics
       orientation: horizontal
       children:
         - $ref: '#/Console/widgets/CPUMetrics'
@@ -307,13 +259,68 @@ Console:
               value: 
                 $ref: '#/Console/widgets/EcsInfo'
                 path: serviceName
-
+    UsefulCommands:
+      type: Tabs
+      displayName: Useful ECS Commands
+      tabNames:
+        - Running proccesses
+        - Container disk util
+        - Network connectivity
+      children:
+        - $ref: '#/Console/widgets/EcsProcesses'
+        - $ref: '#/Console/widgets/EcsDiskUtil'
+        - $ref: '#/Console/widgets/EcsNetworkConnectivity'
+    EcsProcesses:
+      type: Cli
+      displayName: List processes
+      environmentVariables:
+        AWS_REGION:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: region
+        CLUSTER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: clusterName
+        CONTAINER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: images[0].containerId
+      command: >
+        aws ecs list-tasks --cluster $CLUSTER_NAME | jq '[.taskArns[0]][0]' | xargs -I{} sh -c 'aws ecs execute-command --cluster $CLUSTER_NAME --task {} --container $CONTAINER_NAME --command "ps aux" --interactive';
+    EcsDiskUtil:
+      type: Cli
+      displayName: Show Disk Utils
+      environmentVariables:
+        AWS_REGION:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: region
+        CLUSTER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: clusterName
+        CONTAINER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: images[0].containerId
+      command: >
+        aws ecs list-tasks --cluster $CLUSTER_NAME | jq '[.taskArns[0]][0]' | xargs -I{} bash -c 'aws ecs execute-command --cluster $CLUSTER_NAME --task {} --container $CONTAINER_NAME --command "df" --interactive';
+    EcsNetworkConnectivity:
+      type: Cli
+      displayName: Internet Connectivity
+      environmentVariables:
+        AWS_REGION:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: region
+        CLUSTER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: clusterName
+        CONTAINER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: images[0].containerId
+      command: >
+        aws ecs list-tasks --cluster $CLUSTER_NAME | jq '[.taskArns[0]][0]' | xargs -I{} bash -c 'aws ecs execute-command --cluster $CLUSTER_NAME --task {} --container $CONTAINER_NAME --command "curl -k https://example.com" --interactive';
   dependencies:
     Tabs: '@tinystacks/ops-core-widgets'
     Grid: '@tinystacks/ops-core-widgets'
-    AwsCloudWatchLogs:        '@tinystacks/ops-aws-core-plugins'
-    AwsCredentialsProvider:   '@tinystacks/ops-aws-core-plugins'
-    AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-plugins'
-    AwsEcsInfo:               '@tinystacks/ops-aws-core-plugins'
-    AwsEcsDeployments:        '@tinystacks/ops-aws-core-plugins'
-    AwsCli:                   '@tinystacks/ops-aws-core-plugins'
+    Cli:  '@tinystacks/ops-core-widgets'
+    AwsCloudWatchLogs:        '@tinystacks/ops-aws-core-widgets'
+    AwsCredentialsProvider:   '@tinystacks/ops-aws-core-widgets'
+    AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-widgets'
+    AwsEcsInfo:               '@tinystacks/ops-aws-core-widgets'
+    AwsEcsDeployments:        '@tinystacks/ops-aws-core-widgets'
