@@ -1,2 +1,1 @@
-- Changed verison flag from uppercase -V to lowercase -v
-- Changed cli name from ops to ops-cli
+Readme updates
