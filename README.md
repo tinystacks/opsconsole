@@ -71,13 +71,14 @@ ops-cli -v;
 
 # Usage
 
-## ops-cli
+## CLI Commands
+### ops-cli
 Shows usage and help information
 
-## ops-cli init
+### ops-cli init
 Creates a sample config file that includes a basic template. If you don't 
 
-## ops-cli up
+### ops-cli up
 Starts the ops console by pulling down the docker images for the ops api (public.ecr.aws/tinystacks/ops-api) and frontend (public.ecr.aws/tinystacks/ops-frontend). It creates a docker networking bridge called ops-console through which the containers communicate with each other.
 
 #### Options
@@ -87,32 +88,50 @@ Starts the ops console by pulling down the docker images for the ops api (public
 |-c, --config-file|\<config-file\>|  Specifies a config file. See the `samples` folder in this repo for sample config files.
 |-h, --help||             display help for this command
 
+## Sample configs
+Sample dashboard configurations can be found in the `/samples` folder in this repository. 
+
+## Concepts
+|Name|Description|
+|---------|---------|
+|Console|A console is a top level construct. It includes a name to identify itself, as well as dashboards, widgets, providers and dependencies. 
+|Dashboard|A dashboard is a page that consists of an id, a route and list of widget references. 
+|Widget|Widgets are components that have two functions: render and getData. getData is called in the API’s server and is used to make external requests, do computations, etc. Once it is called, it sets some data on the widget itself that’s passed back to the frontend, where render is called to display the widget.
+|Providers|Providers are the beating hearts of the Console. They can be long running and run in the background. They may be passed to widgets to provide sensitive information or long-lived information, whereas widgets are better written as quick request/response styled objects. 
+
+## List of widgets
+|Name|Description|
+|---------|---------|
+|Panel|This widget renders multiple internal widgets in a single direction, either vertical or horizontal.
+|Tabs|This widget renders multiple internal widgets in a tab view. Combine with panel or grid to make robust views.
+|Grid|This widget renders multiple internal widgets in a grid.
+|Markdown|This widget renders markdown.
+
+### AWS widgets
+|Name|Description|
+|---------|---------|
+|CloudWatch Logs|Renders a widget containing logs from a CloudWatchLogs log group or log stream.
+|CloudWatch Graph|Renders a widget containing graphs populated by one or many CloudWatch metrics.
+|ECS Info|Renders a widget containing information about an ECS Service.
+|ECS Deployments|Renders a widget containing information about an ECS Service's current deployments.
+
+## Build and customizing dashboards
+### Using widgets
+1. Define the widget in the `widgets` section of YAML
+2. Reference the widget in a dashboard
+
+### Using providers
+Providers provide data to widgets from an external provider.
+1. Define the provider in the `providers` section
+2. Reference the provider as a list item in widget.
+
+### Sharing data between widgets
+Any property in a widget’s YAML can be substituted for either the props or data of another widget. 
+|Parameter|Required|Syntax|Example
+|---------|---------|---------|---------|
+|Reference|Yes|$ref: [widget path]|$ref: '#/Console/widgets/EcsInfo'
+|Path|No|path: [path of data or props of the widget]|path: region
+
 
 # Contributions
 See CONTRIBUTING.md.
-
-# Sample configs
-Sample dashboard configurations can be found in the `/samples` folder in this repository. 
-
-# List of widgets
-
-# Customizing and creating your own widget
-Intalling a new widgets
-
-Using widgets
-1. Define the widget in the `widgets` section of YAML
-2. reference the widget in a dashboard
-
-Using providers
-Providers provide data to widgets from an external provider.
-1. Define the provider in the `providers` section
-2. reference the provider as a list item in widget.
-
-Sharing data between widgets
-1. 
-
-Writing your own widgets
-There are 2 primary components to a widget
-1. GetData
-	1. This has 2 pieces, providers and overrides
-	1. Overrides are set by render
