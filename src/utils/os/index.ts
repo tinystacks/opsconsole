@@ -4,7 +4,6 @@ import logger from '../../logger/index.js';
 
 export function runCommand (command: string, opts?: ExecOptions) {
   try {
-    // we "return await" here so that errors can be handled within this function to execute retry logic
     if (opts) {
       opts.env = { ...process.env, ...(opts.env || {}) };
     }

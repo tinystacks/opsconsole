@@ -27,7 +27,7 @@ try {
   program.command('up')
     .description('Deploys ops console on local servers')
     .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86.  Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
-    .option('-t, --template <template>', 'Specifies a config file path. Looks for example.yml in the current working directory by default.')
+    .option('-t, --template <template>', 'Specifies a template file path. Looks for example.yml in the current working directory by default.')
     .action(up);
 
   program.command('deploy')
