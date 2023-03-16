@@ -107,13 +107,13 @@ Sample dashboard configurations can be found in the `/samples` folder in this re
 |Grid|This widget renders multiple internal widgets in a grid.
 |Markdown|This widget renders markdown.
 
-### AWS widgets
+### [AWS widgets](https://github.com/tinystacks/ops-aws-core-plugins)
 |Name|Description|
 |---------|---------|
-|CloudWatch Logs|Renders a widget containing logs from a CloudWatchLogs log group or log stream.
-|CloudWatch Graph|Renders a widget containing graphs populated by one or many CloudWatch metrics.
-|ECS Info|Renders a widget containing information about an ECS Service.
-|ECS Deployments|Renders a widget containing information about an ECS Service's current deployments.
+|[CloudWatch Logs](https://github.com/tinystacks/ops-aws-core-plugins#cloudwatch-logs)|Renders a widget containing logs from a CloudWatchLogs log group or log stream.
+|[CloudWatch Graph](https://github.com/tinystacks/ops-aws-core-widgets#cloudwatch-metric-graph)|Renders a widget containing graphs populated by one or many CloudWatch metrics.
+|[ECS Info](https://github.com/tinystacks/ops-aws-core-widgets#ecs-info)|Renders a widget containing information about an ECS Service.
+|[ECS Deployments](https://github.com/tinystacks/ops-aws-core-widgets#ecs-deployments)|Renders a widget containing information about an ECS Service's current deployments.
 
 ## Build and customizing dashboards
 ### Using widgets
