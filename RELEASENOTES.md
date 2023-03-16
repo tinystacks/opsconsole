@@ -1,2 +1,2 @@
-- Switch to public images
-- Make architecture selection optional and explicit
+- Changed verison flag from uppercase -V to lowercase -v
+- Changed cli name from ops to ops-cli
