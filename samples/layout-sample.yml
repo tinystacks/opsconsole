@@ -1,0 +1,61 @@
+Console:
+  name: console
+  providers: {}
+  dashboards:
+    LayoutDashboard:
+      route: main
+      widgets:
+        - $ref: '#/Console/widgets/SmallMarkdown'
+        - $ref: '#/Console/widgets/MdTabs'
+        - $ref: '#/Console/widgets/Panel'
+  widgets:
+    MdTabs:
+      type: Tabs
+      displayName: Markdown Tabs
+      children:
+        - $ref: '#/Console/widgets/Md1'
+        - $ref: '#/Console/widgets/Md2'
+        - $ref: '#/Console/widgets/HorizontalPanel'
+      tabNames:
+        - 'Markdown 1'
+        - 'Markdown 2'
+        - 'Horizontal Markdown'
+    Panel:
+      type: Panel
+      displayName: column
+      children:
+        - $ref: '#/Console/widgets/Md1'
+        - $ref: '#/Console/widgets/Md2'
+    HorizontalPanel:
+      type: Panel
+      displayName: horizontal
+      orientation: horizontal
+      children:
+        - $ref: '#/Console/widgets/Md1'
+        - $ref: '#/Console/widgets/Md2'
+    SmallMarkdown:
+      type: Markdown
+      displayName: Small Markdown Window
+      text: Well well well what we've got here is some downright straightforward markdown
+      markdown: >
+        ### This is fully supported markdown
+
+        ```
+        You can even drop in some code if you want
+        ```
+    Md1:
+      type: Markdown
+      displayName: Tiny Markdown 1
+      markdown: >
+        Just one small markdown window.
+        You can stack these in tabs
+    Md2:
+      type: Markdown
+      displayName: Tiny Markdown 2
+      markdown: >
+        More markdown. You can also keep widgets in panels. 
+
+  dependencies:
+    Markdown: '@tinystacks/ops-core-widgets'
+    Tabs: '@tinystacks/ops-core-widgets'
+    Panel: '@tinystacks/ops-core-widgets'

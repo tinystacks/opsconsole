@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import * as colors from 'colors';
 import { init, up, deploy } from './commands';
 import logger from './logger';
@@ -17,9 +17,9 @@ try {
   colors.enable();
 
   program
-    .name('opsconsole-cli')
+    .name('ops-cli')
     .description('TinyStacks opsconsole command line interface')
-    .version(version);
+    .version(version, '-v, --version');
 
   program.command('init')
     .description('Creates a template file from the example shown in the README')
@@ -27,6 +27,8 @@ try {
 
   program.command('up')
     .description('Deploys ops console on local servers')
+    .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86.  Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
+    .option('-c, --config-file <config-file>', 'Specifies a config file path. Looks for config.yml in the current working directory by default.')
     .action(up);
 
   program.command('deploy')

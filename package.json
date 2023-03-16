@@ -4,11 +4,11 @@
   "description": "",
   "main": "dist/index.js",
   "bin": {
-    "opsconsole-cli": "./dist/index.js"
+    "ops-cli": "./dist/index.js"
   },
   "files": [
     "dist",
-    "example.yml"
+    "samples"
   ],
   "scripts": {
     "build": "tsc",
