@@ -1,0 +1,326 @@
+Console:
+  name: console
+  providers:
+    AwsLocalProvider:
+      id: AwsLocalProvider
+      type: AwsCredentialsProvider
+      credentials:
+        profileName: default
+  dashboards:
+    EcsDashboard:
+      id: EcsDashboard
+      route: main
+      widgets:
+        - $ref: '#/Console/widgets/EcsInfo'
+        - $ref: '#/Console/widgets/EcsDeployments'
+        - $ref: '#/Console/widgets/Metrics'
+        - $ref: '#/Console/widgets/Logs'
+        - $ref: '#/Console/widgets/UsefulCommands'
+  widgets:
+    EcsInfo:
+      type: AwsEcsInfo
+      displayName: Service Information
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      region: us-east-1
+      clusterName: cdk-synth-cluster
+      serviceName: tinystacks-service
+    EcsDeployments:
+      type: AwsEcsDeployments
+      displayName: Service Deployments
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      clusterName: 
+        $ref: '#/Console/provider/EcsInfo'
+        path: clusterName
+      serviceName:
+        $ref: '#/Console/provider/EcsInfo'
+        path: serviceName
+    Logs:
+      type: AwsCloudWatchLogs
+      displayName: Service Logs
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      logGroupName: 
+        $ref: '#/Console/widgets/EcsInfo'
+        path: images[0].cwLogsGroupArn
+      timeRange:
+        time: 12
+        unit: h
+    Metrics:
+      type: Grid
+      displayName: ECS Metrics
+      orientation: horizontal
+      children:
+        - $ref: '#/Console/widgets/CPUMetrics'
+        - $ref: '#/Console/widgets/MemoryMetrics'
+        - $ref: '#/Console/widgets/Capacity'
+        - $ref: '#/Console/widgets/Reservations'
+    CPUMetrics:
+      type: AwsCloudWatchMetricGraph
+      displayName: CPU Utilization Details
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/ECS
+          metricName: CPUUtilization
+          metricDisplayName: 'Average'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+        - metricNamespace: AWS/ECS
+          metricName: CPUUtilization
+          metricDisplayName: 'Max'
+          statistic: Maximum
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+        - metricNamespace: AWS/ECS
+          metricName: CPUUtilization
+          metricDisplayName: 'Min'
+          statistic: Minimum
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+
+    MemoryMetrics:
+      type: AwsCloudWatchMetricGraph
+      displayName: Memory Utilization Details
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/ECS
+          metricName: MemoryUtilization
+          metricDisplayName: 'Average'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+        - metricNamespace: AWS/ECS
+          metricName: MemoryUtilization
+          metricDisplayName: 'Max'
+          statistic: Maximum
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+        - metricNamespace: AWS/ECS
+          metricName: MemoryUtilization
+          metricDisplayName: 'Min'
+          statistic: Minimum
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+
+    Capacity:
+      type: AwsCloudWatchMetricGraph
+      displayName: Capacity
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: ECS/ContainerInsights
+          metricName: RunningTaskCount
+          metricDisplayName: 'Running Tasks'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+        - metricNamespace: ECS/ContainerInsights
+          metricName: PendingTaskCount
+          metricDisplayName: 'Pending Tasks'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+        - metricNamespace: ECS/ContainerInsights
+          metricName: DesiredTaskCount
+          metricDisplayName: 'Desired Tasks'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+    Reservations:
+      type: AwsCloudWatchMetricGraph
+      displayName: Resource Reservations
+      region:
+        $ref: '#/Console/widgets/EcsInfo'
+        path: region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: ECS/ContainerInsights
+          metricName: CpuReserved
+          metricDisplayName: 'Reserved CPU'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+        - metricNamespace: ECS/ContainerInsights
+          metricName: MemoryReserved
+          metricDisplayName: 'Memory Reserved'
+          statistic: Average
+          dimensions:
+            - key: ClusterName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: clusterName
+            - key: ServiceName
+              value: 
+                $ref: '#/Console/widgets/EcsInfo'
+                path: serviceName
+    UsefulCommands:
+      type: Tabs
+      displayName: Useful ECS Commands
+      tabNames:
+        - Running proccesses
+        - Container disk util
+        - Network connectivity
+      children:
+        - $ref: '#/Console/widgets/EcsProcesses'
+        - $ref: '#/Console/widgets/EcsDiskUtil'
+        - $ref: '#/Console/widgets/EcsNetworkConnectivity'
+    EcsProcesses:
+      type: Cli
+      displayName: List processes
+      environmentVariables:
+        AWS_REGION:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: region
+        CLUSTER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: clusterName
+        CONTAINER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: images[0].containerId
+      command: >
+        aws ecs list-tasks --cluster $CLUSTER_NAME | jq '[.taskArns[0]][0]' | xargs -I{} sh -c 'aws ecs execute-command --cluster $CLUSTER_NAME --task {} --container $CONTAINER_NAME --command "ps aux" --interactive';
+    EcsDiskUtil:
+      type: Cli
+      displayName: Show Disk Utils
+      environmentVariables:
+        AWS_REGION:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: region
+        CLUSTER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: clusterName
+        CONTAINER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: images[0].containerId
+      command: >
+        aws ecs list-tasks --cluster $CLUSTER_NAME | jq '[.taskArns[0]][0]' | xargs -I{} bash -c 'aws ecs execute-command --cluster $CLUSTER_NAME --task {} --container $CONTAINER_NAME --command "df" --interactive';
+    EcsNetworkConnectivity:
+      type: Cli
+      displayName: Internet Connectivity
+      environmentVariables:
+        AWS_REGION:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: region
+        CLUSTER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: clusterName
+        CONTAINER_NAME:
+          $ref: '#/Console/widgets/EcsInfo'
+          path: images[0].containerId
+      command: >
+        aws ecs list-tasks --cluster $CLUSTER_NAME | jq '[.taskArns[0]][0]' | xargs -I{} bash -c 'aws ecs execute-command --cluster $CLUSTER_NAME --task {} --container $CONTAINER_NAME --command "curl -k https://example.com" --interactive';
+  dependencies:
+    Tabs: '@tinystacks/ops-core-widgets'
+    Grid: '@tinystacks/ops-core-widgets'
+    Cli:  '@tinystacks/ops-core-widgets'
+    AwsCloudWatchLogs:        '@tinystacks/ops-aws-core-widgets'
+    AwsCredentialsProvider:   '@tinystacks/ops-aws-core-widgets'
+    AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-widgets'
+    AwsEcsInfo:               '@tinystacks/ops-aws-core-widgets'
+    AwsEcsDeployments:        '@tinystacks/ops-aws-core-widgets'
