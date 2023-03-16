@@ -23,8 +23,8 @@ Console:
       providers:
         - $ref: '#/Console/providers/AwsLocalProvider'
       region: us-east-1
-      clusterName: cdk-synth-cluster
-      serviceName: tinystacks-service
+      clusterName: ENTER CLUSTER NAME HERE
+      serviceName: ENTER SERVICE NAME HERE
     EcsDeployments:
       type: AwsEcsDeployments
       displayName: Service Deployments
