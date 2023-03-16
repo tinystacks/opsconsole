@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
 import { Command, Option } from 'commander';
-import * as colors from 'colors';
-import { init, up, deploy } from './commands';
-import logger from './logger';
+import colors from 'colors';
+import { init, up, deploy } from './commands/index.js';
+import logger from './logger/index.js';
 const program = new Command();
-// eslint-disable-next-line
-const { version } = require('../package.json');
+import packagejson from '../package.json' assert { type: 'json' };
 
 function handleError (error: Error) {
   logger.cliError(error);
@@ -19,7 +18,7 @@ try {
   program
     .name('opsconsole-cli')
     .description('TinyStacks opsconsole command line interface')
-    .version(version);
+    .version(packagejson.version, '-v, -V, --version');
 
   program.command('init')
     .description('Creates a template file from the example shown in the README')
@@ -28,7 +27,7 @@ try {
   program.command('up')
     .description('Deploys ops console on local servers')
     .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86.  Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
-    .option('-c, --config-file <config-file>', 'Specifies a config file path. Looks for example.yml in the current working directory by default.')
+    .option('-t, --template <template>', 'Specifies a config file path. Looks for example.yml in the current working directory by default.')
     .action(up);
 
   program.command('deploy')

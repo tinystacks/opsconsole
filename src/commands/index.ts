@@ -1,3 +1,3 @@
-export * from './deploy';
-export * from './init';
-export * from './up';
+export * from './deploy/index.js';
+export * from './init/index.js';
+export * from './up/index.js';

@@ -2,14 +2,15 @@
   "name": "@tinystacks/ops-cli",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "bin": {
-    "ops": "./dist/index.js"
+    "ops-cli": "./dist/src/index.js"
   },
   "files": [
     "dist",
     "samples"
   ],
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "cleanup": "rm -rf dist || true && rm *.tgz || true",
@@ -55,7 +56,11 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
+    "@tinystacks/ops-core": "^0.0.0",
+    "@tinystacks/ops-model": "^0.0.1",
+    "@types/js-yaml": "^4.0.5",
     "colors": "^1.4.0",
-    "commander": "^10.0.0"
+    "commander": "^10.0.0",
+    "js-yaml": "^4.1.0"
   }
 }

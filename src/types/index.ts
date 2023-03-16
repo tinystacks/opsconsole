@@ -5,7 +5,7 @@ export enum ImageArchitecture {
 
 export interface UpOptions {
   arch?: ImageArchitecture;
-  configFile?: string;
+  template?: string;
 }
 
 export const DEFAULT_CONFIG_FILENAME = 'config.yml';

@@ -1,6 +1,6 @@
 import { exec, ExecOptions } from 'child_process';
 import { Readable } from 'stream';
-import logger from '../../logger';
+import logger from '../../logger/index.js';
 
 export function runCommand (command: string, opts?: ExecOptions) {
   try {

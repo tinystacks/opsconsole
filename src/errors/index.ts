@@ -1,1 +1,1 @@
-export * from './cli-error';
+export * from './cli-error.js';

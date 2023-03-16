@@ -1,11 +1,28 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import logger from '../../logger';
-import { runCommand } from '../../utils/os';
-import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types';
+import logger from '../../logger/index.js';
+import { runCommand } from '../../utils/os/index.js';
+import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types/index.js';
 
 const backendSuccessIndicator = 'Running on http://localhost:8000';
 const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
+
+// async function installDependencies (dir: string, file: string) {
+//   const configFile = fs.readFileSync(`${dir}/${file}`);
+//   const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
+//   let parser: ConsoleParser;
+//   if (!_.isNil(configJson)) {
+//     const parsedYaml = ConsoleParser.parse(configJson);
+//     parser = await ConsoleParser.fromJson(parsedYaml);
+//   }
+//   const dependencyDir = `/tmp/${parser.name}`;
+//   fs.mkdirSync(dependencyDir, { recursive: true });
+//   const dependencies = new Set(Object.values(parser.dependencies));
+//   dependencies.forEach((dependency) => {
+//     console.log(dependency);
+//     runCommand(`npm i --prefix ${dependencyDir} ${dependency}`);
+//   });
+// }
 
 function startNetwork () {
   try {
@@ -75,8 +92,8 @@ function validateArchitecture (arch: string) {
   }
 }
 
-function validateConfigFilePath (configFile: string) {
-  const absolutePath = path.resolve(configFile || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
+function validateTemplateFilePath (template: string) {
+  const absolutePath = path.resolve(template || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
   if (fs.existsSync(absolutePath)) {
     return {
       dir: path.dirname(absolutePath),
@@ -89,11 +106,12 @@ function validateConfigFilePath (configFile: string) {
 async function up (options: UpOptions) {
   const { 
     arch, 
-    configFile
+    template
   } = options;
   try {
-    const { dir, file } = validateConfigFilePath(configFile);
+    const { dir, file } = validateTemplateFilePath(template);
     const tag = validateArchitecture(arch);
+    // installDependencies(dir, file);
     startNetwork();
     runBackend(tag, dir, file);
     runFrontend(tag);
