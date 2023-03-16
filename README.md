@@ -5,12 +5,13 @@ Ops Console is an open-source developer portal that delivers a dashboard with an
 The platform comes with default plugins that offer a variety of features such as widgets for AWS ECS services and deployments, IAM JSON Policy viewers, and an AWS CLI, among others. The widgets are interactive and can exchange information, which enables the creation of dynamic and robust dashboards. With a provider and plugin model, developers can customize and extend the Ops Console as much as they wish. The samples/ folder includes several samples of dashboards that can be configured via YAML. 
 
 # Use Cases
-The OpsConsole is a personalized portal that can be used for many cloud developer workflows. Some of the use cases we've considered are:
+The OpsConsole is a personalized portal that can be used for many cloud developer workflows. 
+<br/><br/>Some of the use cases we've considered are:
 
-✅  Building deep operational health dashboards
-✅  Easily navigating through cloud resources for your application
-✅  Sharing and running operational scripts via the CLI plugin 
-✅  Managing cloud sprawl and automating resolution for underutilized resources
+✅  Building deep operational health dashboards<br/> 
+✅  Easily navigating through cloud resources for your application<br/>
+✅  Sharing and running operational scripts via the CLI plugin<br/> 
+✅  Managing cloud sprawl and automating resolution for underutilized resources<br/>
 
 # 📍 Roadmap
 - [x] CLI widget to save and run scripts
