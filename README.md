@@ -119,6 +119,7 @@ Sample dashboard configurations can be found in the `/samples` folder in this re
 ### Using widgets
 1. Define the widget in the `widgets` section of YAML
 2. Reference the widget in a dashboard
+3. Add the widget's source to the `dependencies` section of the YAML
 
 ### Using providers
 Providers provide data to widgets from an external provider.
