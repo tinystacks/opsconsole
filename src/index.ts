@@ -17,9 +17,9 @@ try {
   colors.enable();
 
   program
-    .name('opsconsole-cli')
+    .name('ops-cli')
     .description('TinyStacks opsconsole command line interface')
-    .version(version);
+    .version(version, '-v, --version');
 
   program.command('init')
     .description('Creates a template file from the example shown in the README')

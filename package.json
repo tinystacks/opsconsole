@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "bin": {
-    "ops": "./dist/index.js"
+    "ops-cli": "./dist/index.js"
   },
   "files": [
     "dist",
