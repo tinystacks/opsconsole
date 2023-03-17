@@ -1,6 +1,16 @@
-import { exec, ExecOptions } from 'child_process';
+import { exec, execSync, ExecOptions } from 'child_process';
 import { Readable } from 'stream';
 import logger from '../../logger/index.js';
+
+export function runCommandSync (command: string, opts?: ExecOptions) {
+  try {
+    const out = execSync(command, { ...opts, encoding: 'utf-8' });
+    console.log(out);
+  } catch (e) {
+    logger.error(`Failed to execute command "${command}"`);
+    throw e;
+  }
+}
 
 export function runCommand (command: string, opts?: ExecOptions) {
   try {
@@ -46,4 +56,8 @@ export async function streamToString (stream: Readable) {
   }
 
   return Buffer.concat(chunks).toString('utf-8');
+}
+
+export async function sleep (ms: number) {
+  return await new Promise(r => setTimeout(r, ms));
 }

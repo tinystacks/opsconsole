@@ -16,6 +16,8 @@
     "cleanup": "rm -rf dist || true && rm *.tgz || true",
     "clean-build": "npm ci && npm run cleanup && npm run build",
     "dependency-check": "./node_modules/.bin/depcheck",
+    "fresh-global-install": "npm run hard-clean; npm i; npm run build; npm uninstall -g; npm i -g",
+    "hard-clean": "npm run cleanup; rm -rf node_modules; rm package-lock.json",
     "install-remote": "npm i --@tinystacks:registry=https://registry.npmjs.org",
     "install-local": "npm i --@tinystacks:registry=http:////local-npm-registry:4873",
     "lint": "./node_modules/.bin/eslint ./src",

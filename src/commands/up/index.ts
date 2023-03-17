@@ -1,48 +1,61 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import yaml from 'js-yaml';
+import { ConsoleParser } from '@tinystacks/ops-core';
+import { YamlConsole } from '@tinystacks/ops-model';
 import logger from '../../logger/index.js';
-import { runCommand } from '../../utils/os/index.js';
+import { runCommand, runCommandSync } from '../../utils/os/index.js';
 import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types/index.js';
+import { ChildProcess } from 'child_process';
 
 const backendSuccessIndicator = 'Running on http://localhost:8000';
 const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
 
-// async function installDependencies (dir: string, file: string) {
-//   const configFile = fs.readFileSync(`${dir}/${file}`);
-//   const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
-//   let parser: ConsoleParser;
-//   if (!_.isNil(configJson)) {
-//     const parsedYaml = ConsoleParser.parse(configJson);
-//     parser = await ConsoleParser.fromJson(parsedYaml);
-//   }
-//   const dependencyDir = `/tmp/${parser.name}`;
-//   fs.mkdirSync(dependencyDir, { recursive: true });
-//   const dependencies = new Set(Object.values(parser.dependencies));
-//   dependencies.forEach((dependency) => {
-//     console.log(dependency);
-//     runCommand(`npm i --prefix ${dependencyDir} ${dependency}`);
-//   });
-// }
+function installDependencies (dir: string, file: string) {
+  try {
+    const configFile = fs.readFileSync(`${dir}/${file}`);
+    const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
+    const parsedYaml = ConsoleParser.parse(configJson);
+    const dependencyDir = `/tmp/${parsedYaml.name}`;
+    fs.rmSync(dependencyDir, { recursive: true, force: true });
+    fs.mkdirSync(dependencyDir, { recursive: true });
+    runCommandSync('npm cache clean --force');
+    const dependencies = new Set(Object.values(parsedYaml.dependencies));
+    logger.info('Installing dependencies...');
+    dependencies.forEach((dependency) => {
+      logger.info(`Installing ${dependency}`);
+      runCommandSync(`npm i --prefix ${dependencyDir} ${dependency}`);
+      logger.success(`Installed ${dependency}`);
+    });
+    return parsedYaml.name;
+  } catch (e) {
+    logger.error('Failed to install dependencies. Please verify that your yaml template is formatted correctly.');
+    throw e;
+  }
+}
 
 function startNetwork () {
   try {
+    logger.info('Launching opsconsole docker network');
     const commands = [
       'docker network rm ops-console 2> /dev/null',
       'docker network create -d bridge ops-console 2> /dev/null'
     ].join('\n');
-    runCommand(commands);
+    runCommandSync(commands);
   } catch (e) {
-    logger.error(`Error launching ops console network: ${e}`);
+    logger.error('Error launching ops console network');
+    throw e;
   }
 }
 
-function runBackend (tag?: string, dir?: string, file?: string) {
+function runBackend (tag?: string, dir?: string, file?: string, consoleName?: string) {
   try {
+    logger.info('Launching backend on localhost:8000');
     const commands = [
       `docker pull public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}`,
       'docker container stop ops-api || true',
       'docker container rm ops-api || true',
-      `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console "public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}";`
+      `docker run --name ops-api -v /tmp/${consoleName}:/dependencies -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console "public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}";`
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
@@ -50,18 +63,21 @@ function runBackend (tag?: string, dir?: string, file?: string) {
         logger.success('Ops console backend successfully launched');
       }
     });
+    return childProcess;
   } catch (e) {
     logger.error(`Error launching ops console backend: ${e}`);
+    throw e;
   }
 }
 
-function runFrontend (tag?: string) {
+function runFrontend (tag?: string, consoleName?: string) {
   try {
+    logger.info('Launching frontend on localhost:3000');
     const commands = [
       `docker pull public.ecr.aws/tinystacks/ops-frontend:latest${tag ? `-${tag}` : ''}`,
       'docker container stop ops-frontend || true',
       'docker container rm ops-frontend || true',
-      `docker run --name ops-frontend -i -p 3000:3000 --network=ops-console "public.ecr.aws/tinystacks/ops-frontend:latest${tag ? `-${tag}` : ''}";`
+      `docker run --name ops-frontend -v /tmp/${consoleName}:/dependencies -i -p 3000:3000 --network=ops-console "public.ecr.aws/tinystacks/ops-frontend:latest${tag ? `-${tag}` : ''}";`
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
@@ -69,8 +85,10 @@ function runFrontend (tag?: string) {
         logger.success('Ops console frontend successfully launched');
       }
     });
+    return childProcess;
   } catch (e) {
     logger.error(`Error launching ops console frontend: ${e}`);
+    throw e;
   }
 }
 
@@ -103,6 +121,23 @@ function validateTemplateFilePath (template: string) {
   throw new Error(`Specified config file ${absolutePath} does not exist.`);
 }
 
+function handleExitSignalCleanup (backendProcess: ChildProcess, frontendProcess: ChildProcess) {
+  function cleanup () {
+    logger.info('Cleaning up...');
+    backendProcess.kill();
+    frontendProcess.kill();
+  }
+  process.on('SIGINT', () => {
+    cleanup();
+  });
+  process.on('SIGQUIT', () => {
+    cleanup();
+  });
+  process.on('SIGTERM', () => {
+    cleanup();
+  }); 
+}
+
 async function up (options: UpOptions) {
   const { 
     arch, 
@@ -111,10 +146,11 @@ async function up (options: UpOptions) {
   try {
     const { dir, file } = validateTemplateFilePath(template);
     const tag = validateArchitecture(arch);
-    // installDependencies(dir, file);
+    const consoleName = installDependencies(dir, file);
     startNetwork();
-    runBackend(tag, dir, file);
-    runFrontend(tag);
+    const backendProcess = runBackend(tag, dir, file, consoleName);
+    const frontendProcess = runFrontend(tag, consoleName);
+    handleExitSignalCleanup(backendProcess, frontendProcess);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'An unknown error occurred';
     logger.error(message);

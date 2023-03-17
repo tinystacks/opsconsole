@@ -59,3 +59,4 @@ Console:
     Markdown: '@tinystacks/ops-core-widgets'
     Tabs: '@tinystacks/ops-core-widgets'
     Panel: '@tinystacks/ops-core-widgets'
+    AwsEcsDeployments: '@tinystacks/ops-aws-core-plugins'
