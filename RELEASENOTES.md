@@ -1,2 +1,2 @@
-- Switch to public images
-- Make architecture selection optional and explicit
+- Added runtime widget installation
+- Process killing is more graceful
