@@ -1,2 +1,3 @@
 - Added runtime widget installation
 - Process killing is more graceful
+- Converts package from commonjs to esm module
