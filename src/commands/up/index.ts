@@ -8,8 +8,8 @@ import { runCommand, runCommandSync } from '../../utils/os/index.js';
 import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types/index.js';
 import { ChildProcess } from 'child_process';
 
-const backendSuccessIndicator = 'Running on http://localhost:8000';
-const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
+const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
+const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 
 function installDependencies (dir: string, file: string) {
   try {
@@ -19,14 +19,11 @@ function installDependencies (dir: string, file: string) {
     const dependencyDir = `/tmp/${parsedYaml.name}`;
     fs.rmSync(dependencyDir, { recursive: true, force: true });
     fs.mkdirSync(dependencyDir, { recursive: true });
-    runCommandSync('npm cache clean --force');
     const dependencies = new Set(Object.values(parsedYaml.dependencies));
     logger.info('Installing dependencies...');
-    dependencies.forEach((dependency) => {
-      logger.info(`Installing ${dependency}`);
-      runCommandSync(`npm i --prefix ${dependencyDir} ${dependency}`);
-      logger.success(`Installed ${dependency}`);
-    });
+    const installString = Array.from(dependencies).join(' ');
+    runCommandSync(`npm i --prefix ${dependencyDir} ${installString}`);
+    logger.success('Dependencies installed');
     return parsedYaml.name;
   } catch (e) {
     logger.error('Failed to install dependencies. Please verify that your yaml template is formatted correctly.');
@@ -38,8 +35,8 @@ function startNetwork () {
   try {
     logger.info('Launching opsconsole docker network');
     const commands = [
-      'docker network rm ops-console 2> /dev/null',
-      'docker network create -d bridge ops-console 2> /dev/null'
+      'docker network rm ops-console',
+      'docker network create -d bridge ops-console'
     ].join('\n');
     runCommandSync(commands);
   } catch (e) {
@@ -55,11 +52,11 @@ function runBackend (tag?: string, dir?: string, file?: string, consoleName?: st
       `docker pull public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}`,
       'docker container stop ops-api || true',
       'docker container rm ops-api || true',
-      `docker run --name ops-api -v /tmp/${consoleName}:/dependencies -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console "public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}";`
+      `docker run --name ops-api -v /tmp/${consoleName}:/dependencies -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" --env MOUNTED_DEPENDENCIES=true -i -p 8000:8000 --network=ops-console "public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}";`
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
-      if (data.includes(backendSuccessIndicator)) { 
+      if (data.includes(BACKEND_SUCCESS_INDICATOR)) { 
         logger.success('Ops console backend successfully launched');
       }
     });
@@ -77,11 +74,11 @@ function runFrontend (tag?: string, consoleName?: string) {
       `docker pull public.ecr.aws/tinystacks/ops-frontend:latest${tag ? `-${tag}` : ''}`,
       'docker container stop ops-frontend || true',
       'docker container rm ops-frontend || true',
-      `docker run --name ops-frontend -v /tmp/${consoleName}:/dependencies -i -p 3000:3000 --network=ops-console "public.ecr.aws/tinystacks/ops-frontend:latest${tag ? `-${tag}` : ''}";`
+      `docker run --name ops-frontend -v /tmp/${consoleName}:/dependencies --env MOUNTED_DEPENDENCIES=true -i -p 3000:3000 --network=ops-console "public.ecr.aws/tinystacks/ops-frontend:latest${tag ? `-${tag}` : ''}";`
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
-      if (data.includes(frontendSuccessIndicator)) {
+      if (data.includes(FRONTEND_SUCCESS_INDICATOR )) {
         logger.success('Ops console frontend successfully launched');
       }
     });
@@ -126,6 +123,7 @@ function handleExitSignalCleanup (backendProcess: ChildProcess, frontendProcess:
     logger.info('Cleaning up...');
     backendProcess.kill();
     frontendProcess.kill();
+    runCommandSync('docker stop ops-frontend ops-api || true; docker network rm ops-console');
   }
   process.on('SIGINT', () => {
     cleanup();
