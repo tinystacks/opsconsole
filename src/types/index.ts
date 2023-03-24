@@ -11,4 +11,11 @@ export interface UpOptions extends CommonOptions {
   arch?: ImageArchitecture;
 }
 
-export const DEFAULT_CONFIG_FILENAME = 'config.yml';
+export type Credentials = {
+  apiKey: string;
+  groupName?: string;
+};
+
+export type GetOptions = {
+  consoleName: string;
+}

@@ -4,7 +4,8 @@ import {
   yellow,
   blue,
   gray,
-  green
+  green,
+  black
 } from 'colors';
 import { CliError } from '../errors';
 
@@ -27,6 +28,10 @@ const logger = {
 
   log (message: string) {
     console.log(gray(message));
+  },
+  
+  stdout (message: string) {
+    console.log(black(message));
   },
 
   hint (message: string) {

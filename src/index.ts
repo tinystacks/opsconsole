@@ -4,6 +4,8 @@ import { Command, Option } from 'commander';
 import * as colors from 'colors';
 import { init, up, deploy } from './commands';
 import logger from './logger';
+import { login } from './commands/login';
+import { list } from './commands/list';
 const program = new Command();
 // eslint-disable-next-line
 const { version } = require('../package.json');
@@ -35,6 +37,15 @@ try {
     .description('Deploys ops console on a TinyStacks hosted solution. Requires a paid account and an API key.')
     .option('-c, --config-file <config-file>', 'Specifies a config file path. Looks for config.yml in the current working directory by default.')
     .action(deploy);
+  
+  program.command('login')
+    .description('Prompts for login information like API key that will be used for deploying your console as a hosted solution.  Not necessary for running locally via the "up" command.')
+    .action(login);
+
+  program.command('list')
+    .description('List the details of your existing hosted consoles. Requires a paid account and an API key.')
+    .option('-n, --console-name <console-name>', 'Specifies a console name to looks up details for a specific hosted console. If left blank details for all of your host consoles will be listed.')
+    .action(list);
 
   program.parseAsync()
     .catch(handleError);

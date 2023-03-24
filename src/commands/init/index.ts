@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import path from 'path';
 import logger from '../../logger';
-import { DEFAULT_CONFIG_FILENAME } from '../../types';
+import { DEFAULT_CONFIG_FILENAME } from '../../constants';
 
 function init () {
   try { 

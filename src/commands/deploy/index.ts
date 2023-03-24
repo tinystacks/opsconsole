@@ -3,41 +3,47 @@ import path from 'path';
 import HttpError from 'http-errors';
 import { HostedOpsConsole, OpenAPIConfig, OpsStackApiClient } from '@tinystacks/ops-stack-client';
 import logger from '../../logger';
-import { CommonOptions, DEFAULT_CONFIG_FILENAME } from '../../types';
+import { CommonOptions, Credentials } from '../../types';
 import { parseConfig } from '../../utils/config';
+import { DEFAULT_CONFIG_FILENAME, TMP_DIR } from '../../constants';
 
 function getClient (apiKey: string) {
   // FIXME: Replace with prod endpoint once it's deployed
-  const baseEndpoint = '';
+  const baseEndpoint = 'https://rbxfvmjh4e.execute-api.us-west-2.amazonaws.com';
   const clientOptions: Partial<OpenAPIConfig> = {
     BASE: baseEndpoint
   };
   if (apiKey) {
     clientOptions['HEADERS'] = {
-      Authorization: apiKey
+      authorization: apiKey
     };
   }
   return new OpsStackApiClient(clientOptions);
 }
 
-function getApiKey () {
-  // FIXME: where will the api key live?
-  return 'mock-api-key';
+function getCredentials (): Credentials {
+  const credsFile = fs.readFileSync(path.join(TMP_DIR, 'credentials'))?.toString() || '{}';
+  const creds: any = JSON.parse(credsFile);
+  if (!creds.apiKey) {
+    throw new Error('Cannot find credentials! Try running "ops-cli login" and try again.');
+  }
+  return creds;
 }
 
 async function checkIfConsoleExists (consoleName: string, opsStackClient: OpsStackApiClient): Promise<boolean | never> {
-  // TODO: How to handle group name?
-  const consoleStack = await opsStackClient.allocate.getOpsStack(consoleName);
-  if (HttpError.isHttpError(consoleStack)) {
-    const httpError = consoleStack as HttpError.HttpError;
-    if (httpError.status === 404) {
+  try {
+
+    const consoleStack = await opsStackClient.allocate.getOpsStack(consoleName);
+    if (consoleStack && consoleStack.name === consoleName) return true;
+    throw consoleStack;
+  } catch (e) {
+    const error = e as any;
+    if (error.status === 404) {
       return false;
     }
-    else {
-      throw httpError;
-    }
+    throw error;
+
   }
-  return true;
 }
 
 async function deploy (options: CommonOptions) {
@@ -47,9 +53,9 @@ async function deploy (options: CommonOptions) {
     } = options;
     const absolutePath = path.resolve(configFile || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
     const configFileContents = fs.readFileSync(absolutePath).toString();
-    const console = parseConfig(absolutePath);
+    const console = await parseConfig(absolutePath);
     const { name } = console;
-    const apiKey = getApiKey();
+    const { apiKey } = getCredentials();
     const opsStackClient = getClient(apiKey);
     const consoleExists = await checkIfConsoleExists(name, opsStackClient);
     let response: HostedOpsConsole | HttpError.HttpError;
@@ -62,7 +68,7 @@ async function deploy (options: CommonOptions) {
       throw response;
     }
     logger.success('Successful started ops console deployment!');
-    logger.success(JSON.stringify(response));
+    logger.stdout(JSON.stringify(response, null, 2));
   } catch (error) {
     logger.error(`Error deploying ops console: ${error}`);
   }

@@ -2,7 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import logger from '../../logger';
 import { runCommand } from '../../utils/os';
-import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types';
+import { ImageArchitecture, UpOptions } from '../../types';
+import { DEFAULT_CONFIG_FILENAME } from '../../constants';
 
 const backendSuccessIndicator = 'Running on http://localhost:8000';
 const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
