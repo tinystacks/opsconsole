@@ -17,5 +17,5 @@ export type Credentials = {
 };
 
 export type GetOptions = {
-  consoleName: string;
+  consoleName?: string;
 }

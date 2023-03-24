@@ -28,7 +28,7 @@ function getCredentials (): Credentials {
   return creds;
 }
 
-async function list (options: GetOptions) {
+async function list (options: GetOptions = {}) {
   try {
     const {
       consoleName
@@ -38,7 +38,7 @@ async function list (options: GetOptions) {
     const response = await opsStackClient.allocate.getOpsStack(consoleName);
     logger.stdout(JSON.stringify(response, null, 2));
   } catch (error) {
-    logger.error(`Error deploying ops console: ${error}`);
+    logger.error(`Error listing ops consoles: ${error}`);
   }
 }
 
