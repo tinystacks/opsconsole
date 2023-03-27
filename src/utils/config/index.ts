@@ -7,6 +7,5 @@ export async function parseConfig (file: string, parentDirectory?: string): Prom
   const filePath = parentDirectory ? `${parentDirectory}/${file}`: file;
   const configFile = fs.readFileSync(filePath);
   const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
-  console.debug('ConsoleParser: ', ConsoleParser);
   return ConsoleParser.parse(configJson);
 }

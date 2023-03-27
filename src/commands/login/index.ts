@@ -20,7 +20,6 @@ async function login () {
       //   message: 'Enter your TinyStacks group name if this stack will be co-owned'
       // }
     ];
-    console.debug('prompts: ', prompts);
     const credentials = await prompts(questions);
     fs.writeFileSync(path.join(TMP_DIR, 'credentials'), JSON.stringify(credentials));
   } catch (e) {
