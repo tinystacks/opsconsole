@@ -1,6 +1,6 @@
 import pkg from 'colors';
 const { red, magenta, yellow, blue, gray, green } = pkg;
-import { CliError } from '../errors/index.js';
+import { CliError } from '../errors';
 
 const logger = {
   error (message: string) {

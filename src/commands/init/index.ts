@@ -1,11 +1,7 @@
 import * as fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import logger from '../../logger/index.js';
-import { DEFAULT_CONFIG_FILENAME } from '../../types/index.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import logger from '../../logger';
+import { DEFAULT_CONFIG_FILENAME } from '../../types';
 
 function init () {
   try { 

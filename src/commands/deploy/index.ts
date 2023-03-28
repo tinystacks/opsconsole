@@ -1,4 +1,4 @@
-import logger from '../../logger/index.js';
+import logger from '../../logger';
 
 function deploy () {
   try {

@@ -8,4 +8,10 @@ export interface UpOptions {
   template?: string;
 }
 
+export interface OsOutput {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
+
 export const DEFAULT_CONFIG_FILENAME = 'config.yml';

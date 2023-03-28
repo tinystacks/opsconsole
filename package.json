@@ -10,7 +10,6 @@
     "dist",
     "samples"
   ],
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "cleanup": "rm -rf dist || true && rm *.tgz || true",

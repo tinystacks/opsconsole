@@ -1,20 +1,21 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import yaml from 'js-yaml';
-import { ConsoleParser } from '@tinystacks/ops-core';
+// import { ConsoleParser } from '@tinystacks/ops-core';
 import { YamlConsole } from '@tinystacks/ops-model';
-import logger from '../../logger/index.js';
-import { runCommand, runCommandSync } from '../../utils/os/index.js';
-import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types/index.js';
+import logger from '../../logger';
+import { runCommand, runCommandSync } from '../../utils/os';
+import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types';
 import { ChildProcess } from 'child_process';
 
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 
-function installDependencies (dir: string, file: string) {
+async function installDependencies (dir: string, file: string) {
   try {
     const configFile = fs.readFileSync(`${dir}/${file}`);
     const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
+    const { ConsoleParser } = await import('@tinystacks/ops-core');
     const parsedYaml = ConsoleParser.parse(configJson);
     const dependencyDir = `/tmp/${parsedYaml.name}`;
     fs.rmSync(dependencyDir, { recursive: true, force: true });
@@ -22,7 +23,7 @@ function installDependencies (dir: string, file: string) {
     const dependencies = new Set(Object.values(parsedYaml.dependencies));
     logger.info('Installing dependencies...');
     const installString = Array.from(dependencies).join(' ');
-    runCommandSync(`npm i --prefix ${dependencyDir} ${installString}`);
+    await runCommandSync(`npm i --prefix ${dependencyDir} ${installString}`);
     logger.success('Dependencies installed');
     return parsedYaml.name;
   } catch (e) {
@@ -31,14 +32,14 @@ function installDependencies (dir: string, file: string) {
   }
 }
 
-function startNetwork () {
+async function startNetwork () {
   try {
     logger.info('Launching opsconsole docker network');
     const commands = [
       'docker network rm ops-console',
       'docker network create -d bridge ops-console'
     ].join('\n');
-    runCommandSync(commands);
+    await runCommandSync(commands);
   } catch (e) {
     logger.error('Error launching ops console network');
     throw e;
@@ -118,21 +119,21 @@ function validateTemplateFilePath (template: string) {
   throw new Error(`Specified config file ${absolutePath} does not exist.`);
 }
 
-function handleExitSignalCleanup (backendProcess: ChildProcess, frontendProcess: ChildProcess) {
-  function cleanup () {
+async function handleExitSignalCleanup (backendProcess: ChildProcess, frontendProcess: ChildProcess) {
+  async function cleanup () {
     logger.info('Cleaning up...');
     backendProcess.kill();
     frontendProcess.kill();
-    runCommandSync('docker stop ops-frontend ops-api || true; docker network rm ops-console');
+    await runCommandSync('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
   }
-  process.on('SIGINT', () => {
-    cleanup();
+  process.on('SIGINT', async () => {
+    await cleanup();
   });
-  process.on('SIGQUIT', () => {
-    cleanup();
+  process.on('SIGQUIT', async () => {
+    await cleanup();
   });
-  process.on('SIGTERM', () => {
-    cleanup();
+  process.on('SIGTERM', async () => {
+    await cleanup();
   }); 
 }
 
@@ -144,11 +145,11 @@ async function up (options: UpOptions) {
   try {
     const { dir, file } = validateTemplateFilePath(template);
     const tag = validateArchitecture(arch);
-    const consoleName = installDependencies(dir, file);
-    startNetwork();
+    const consoleName = await installDependencies(dir, file);
+    await startNetwork();
     const backendProcess = runBackend(tag, dir, file, consoleName);
     const frontendProcess = runFrontend(tag, consoleName);
-    handleExitSignalCleanup(backendProcess, frontendProcess);
+    await handleExitSignalCleanup(backendProcess, frontendProcess);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'An unknown error occurred';
     logger.error(message);

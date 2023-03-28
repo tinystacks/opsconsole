@@ -2,11 +2,11 @@
 
 import { Command, Option } from 'commander';
 import colors from 'colors';
-import { init, up, deploy } from './commands/index.js';
-import logger from './logger/index.js';
+import { init, up, deploy } from './commands';
+import logger from './logger';
 const program = new Command();
-import packageJson from '../package.json' assert { type: 'json' };
-import { DEFAULT_CONFIG_FILENAME } from './types/index.js';
+import { version } from '../package.json';
+import { DEFAULT_CONFIG_FILENAME } from './types';
 
 function handleError (error: Error) {
   logger.cliError(error);
@@ -19,7 +19,7 @@ try {
   program
     .name('ops-cli')
     .description('TinyStacks opsconsole command line interface')
-    .version(packageJson.version, '-v, --version');
+    .version(version, '-v, --version');
 
   program.command('init')
     .description('Creates a template file from the example shown in the README')
