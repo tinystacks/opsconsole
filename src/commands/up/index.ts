@@ -1,22 +1,33 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '../../logger';
-import { runCommand } from '../../utils/os';
+import { promisifyChildProcess, runCommand } from '../../utils/os';
 import { ImageArchitecture, UpOptions } from '../../types';
 import { DEFAULT_CONFIG_FILENAME } from '../../constants';
+import isNil from 'lodash.isnil';
 
 const backendSuccessIndicator = 'Running on http://localhost:8000';
 const frontendSuccessIndicator = 'ready - started server on 0.0.0.0:3000';
 
-function startNetwork () {
+async function startNetwork () {
   try {
     const commands = [
       'docker network rm ops-console 2> /dev/null',
       'docker network create -d bridge ops-console 2> /dev/null'
     ].join('\n');
-    runCommand(commands);
-  } catch (e) {
-    logger.error(`Error launching ops console network: ${e}`);
+    await promisifyChildProcess(runCommand(commands)).catch((e) => {
+      const isChildProcessOutput: boolean = !Number.isNaN(e.exitCode) && !isNil(e.stdout) && !isNil(e.stderr);
+      if (isChildProcessOutput) {
+        if (e.signal) {
+          throw new Error(`Process was interrupted by signal ${e.signal}! Exiting with code ${e.exitCode}...`);
+        }
+        throw new Error(`Commands to start docker network failed with exit code ${e.exitCode}!\n\t stdout: ${e.stdout}\n\t stderr: ${e.stderr}`);
+      }
+      throw e;
+    });
+  } catch (error) {
+    logger.error('Error launching ops console network!');
+    throw error;
   }
 }
 
@@ -59,10 +70,7 @@ function runFrontend (tag?: string) {
 }
 
 function validateArchitecture (arch: string) {
-  if (arch) {
-    return arch;
-  }
-  switch (process.arch) {
+  switch (arch) {
     case 'x64':
       return ImageArchitecture.x86;
     case 'ia32':
@@ -89,13 +97,14 @@ function validateConfigFilePath (configFile: string) {
 
 async function up (options: UpOptions) {
   const { 
-    arch, 
+    arch = process.arch, 
     configFile
   } = options;
   try {
     const { dir, file } = validateConfigFilePath(configFile);
     const tag = validateArchitecture(arch);
-    startNetwork();
+    // Wait for network to be up before starting containers
+    await startNetwork();
     runBackend(tag, dir, file);
     runFrontend(tag);
   } catch (e) {

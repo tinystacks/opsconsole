@@ -1,4 +1,4 @@
-import { exec, ExecOptions } from 'child_process';
+import { ChildProcess, exec, ExecOptions } from 'child_process';
 import { Readable } from 'stream';
 import logger from '../../logger';
 
@@ -47,4 +47,40 @@ export async function streamToString (stream: Readable) {
   }
 
   return Buffer.concat(chunks).toString('utf-8');
+}
+
+export async function promisifyChildProcess (childProcess: ChildProcess) {
+  return new Promise((resolve, reject) => {
+    const standardOut: string[] = [];
+    const standardError: string[] = [];
+
+    childProcess.stdout?.on('data', (data) => {
+      standardOut.push(data);
+    });
+    
+    childProcess.stderr?.on('data', (data) => {
+      standardError.push(data);
+    });
+
+    childProcess.on('error', (error: Error) => {
+      reject(error);
+    });
+    
+    childProcess.on('exit', (code: number, signal: string) => {
+      if (code === 0) {
+        resolve({
+          stdout: standardOut.join('\n'),
+          stderr: standardError.join('\n'),
+          exitCode: code
+        });
+      } else {
+        reject({
+          stdout: standardOut.join('\n'),
+          stderr: standardError.join('\n'),
+          exitCode: code,
+          signal
+        });
+      }
+    });
+  });
 }

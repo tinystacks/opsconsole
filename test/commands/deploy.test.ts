@@ -1,5 +1,4 @@
 const mockReadFileSync = jest.fn();
-const mockOpsStackApiClient = jest.fn();
 const mockLoggerError = jest.fn();
 const mockLoggerStdout = jest.fn();
 const mockLoggerSuccess = jest.fn();
@@ -8,6 +7,8 @@ const mockParseConfig = jest.fn();
 const mockGetOpsStack = jest.fn();
 const mockCreateOpsStack = jest.fn();
 const mockUpdateOpsStack = jest.fn();
+const mockGetCredentials = jest.fn();
+const mockGetClient = jest.fn();
 
 jest.mock('fs', () => ({
   readFileSync: mockReadFileSync
@@ -21,15 +22,6 @@ jest.mock('path', () => {
   };
 });
 
-jest.mock('@tinystacks/ops-stack-client', () => {
-  const original = jest.requireActual('@tinystacks/ops-stack-client');
-  return {
-    OpsStackApiClient: mockOpsStackApiClient,
-    OpenAPIConfig: original.OpenAPIConfig,
-    HostedOpsConsole: original.HostedOpsConsole
-  };
-});
-
 jest.mock('../../src/logger', () => ({
   error: mockLoggerError,
   stdout: mockLoggerStdout,
@@ -40,6 +32,11 @@ jest.mock('../../src/utils/config', () => ({
   parseConfig: mockParseConfig
 }));
 
+jest.mock('../../src/utils/ops-stack-api-utils', () => ({
+  getCredentials: mockGetCredentials,
+  getClient: mockGetClient
+}));
+
 import { deploy } from '../../src/commands/deploy';
 
 
@@ -48,15 +45,18 @@ const mockConfigJson = { name: 'console' };
 const mockOpsStack = { name: 'console', status: 'Syncing' };
 const mockCredentials = { apiKey: 'mock-api-key' };
 
+const mockOpsStackApiClient = {
+  allocate: {
+    getOpsStack: mockGetOpsStack,
+    createOpsStack: mockCreateOpsStack,
+    updateOpsStack: mockUpdateOpsStack
+  }
+};
+
 describe('deploy', () => {
   beforeEach(() => {
-    mockOpsStackApiClient.mockReturnValue({
-      allocate: {
-        getOpsStack: mockGetOpsStack,
-        createOpsStack: mockCreateOpsStack,
-        updateOpsStack: mockUpdateOpsStack
-      }
-    });
+    mockGetClient.mockReturnValue(mockOpsStackApiClient);
+    mockGetCredentials.mockReturnValue(mockCredentials);
   });
   afterEach(() => {
     // for mocks
@@ -67,7 +67,6 @@ describe('deploy', () => {
   it('creates new ops console stack if one does not already exist', async () => {
     mockResolve.mockImplementationOnce((filePath: string) => filePath);
     mockReadFileSync.mockReturnValueOnce(mockConfigYaml);
-    mockReadFileSync.mockReturnValueOnce(JSON.stringify(mockCredentials));
     mockParseConfig.mockResolvedValueOnce(mockConfigJson);
     mockGetOpsStack.mockRejectedValueOnce({ status: 404 });
     mockCreateOpsStack.mockResolvedValueOnce(mockOpsStack);
@@ -78,20 +77,12 @@ describe('deploy', () => {
     expect(mockResolve).toBeCalledWith('index.yml');
 
     expect(mockReadFileSync).toBeCalled();
-    expect(mockReadFileSync).toBeCalledTimes(2);
     expect(mockReadFileSync).toBeCalledWith('index.yml');
-    expect(mockReadFileSync).toBeCalledWith('/tmp/.ops-console/credentials');
     
     expect(mockParseConfig).toBeCalled();
     expect(mockParseConfig).toBeCalledWith('index.yml');
 
-    expect(mockOpsStackApiClient).toBeCalled();
-    expect(mockOpsStackApiClient).toBeCalledWith({
-      BASE: 'https://rbxfvmjh4e.execute-api.us-west-2.amazonaws.com',
-      HEADERS: {
-        authorization: 'mock-api-key'
-      }
-    });
+    expect(mockGetClient).toBeCalled();
 
     expect(mockCreateOpsStack).toBeCalled();
     expect(mockCreateOpsStack).toBeCalledWith(mockConfigYaml);
@@ -106,7 +97,6 @@ describe('deploy', () => {
     const defaultPath = `${process.cwd()}/config.yml`
     mockResolve.mockImplementationOnce((filePath: string) => filePath);
     mockReadFileSync.mockReturnValueOnce(mockConfigYaml);
-    mockReadFileSync.mockReturnValueOnce(JSON.stringify(mockCredentials));
     mockParseConfig.mockResolvedValueOnce(mockConfigJson);
     mockGetOpsStack.mockResolvedValueOnce(mockOpsStack);
     mockUpdateOpsStack.mockResolvedValueOnce(mockOpsStack);
@@ -117,20 +107,12 @@ describe('deploy', () => {
     expect(mockResolve).toBeCalledWith(defaultPath);
 
     expect(mockReadFileSync).toBeCalled();
-    expect(mockReadFileSync).toBeCalledTimes(2);
     expect(mockReadFileSync).toBeCalledWith(defaultPath);
-    expect(mockReadFileSync).toBeCalledWith('/tmp/.ops-console/credentials');
     
     expect(mockParseConfig).toBeCalled();
     expect(mockParseConfig).toBeCalledWith(defaultPath);
 
-    expect(mockOpsStackApiClient).toBeCalled();
-    expect(mockOpsStackApiClient).toBeCalledWith({
-      BASE: 'https://rbxfvmjh4e.execute-api.us-west-2.amazonaws.com',
-      HEADERS: {
-        authorization: 'mock-api-key'
-      }
-    });
+    expect(mockGetClient).toBeCalled();
 
     expect(mockCreateOpsStack).not.toBeCalled();
     
@@ -153,7 +135,7 @@ describe('deploy', () => {
 
     expect(mockReadFileSync).not.toBeCalled();
     expect(mockParseConfig).not.toBeCalled();
-    expect(mockOpsStackApiClient).not.toBeCalled();
+    expect(mockGetClient).not.toBeCalled();
     expect(mockCreateOpsStack).not.toBeCalled();
     expect(mockUpdateOpsStack).not.toBeCalled();
     expect(mockLoggerSuccess).not.toBeCalled();    

@@ -1,34 +1,12 @@
 import * as fs from 'fs';
 import path from 'path';
 import HttpError from 'http-errors';
-import { HostedOpsConsole, OpenAPIConfig, OpsStackApiClient } from '@tinystacks/ops-stack-client';
+import { HostedOpsConsole, OpsStackApiClient } from '@tinystacks/ops-stack-client';
 import logger from '../../logger';
-import { CommonOptions, Credentials } from '../../types';
+import { CommonOptions } from '../../types';
 import { parseConfig } from '../../utils/config';
-import { DEFAULT_CONFIG_FILENAME, TMP_DIR } from '../../constants';
-
-function getClient (apiKey: string) {
-  // FIXME: Replace with prod endpoint once it's deployed
-  const baseEndpoint = 'https://rbxfvmjh4e.execute-api.us-west-2.amazonaws.com';
-  const clientOptions: Partial<OpenAPIConfig> = {
-    BASE: baseEndpoint
-  };
-  if (apiKey) {
-    clientOptions['HEADERS'] = {
-      authorization: apiKey
-    };
-  }
-  return new OpsStackApiClient(clientOptions);
-}
-
-function getCredentials (): Credentials {
-  const credsFile = fs.readFileSync(path.join(TMP_DIR, 'credentials'))?.toString() || '{}';
-  const creds: any = JSON.parse(credsFile);
-  if (!creds.apiKey) {
-    throw new Error('Cannot find credentials! Try running "ops-cli login" and try again.');
-  }
-  return creds;
-}
+import { DEFAULT_CONFIG_FILENAME } from '../../constants';
+import { getCredentials, getClient } from '../../utils/ops-stack-api-utils';
 
 async function checkIfConsoleExists (consoleName: string, opsStackClient: OpsStackApiClient): Promise<boolean | never> {
   try {
