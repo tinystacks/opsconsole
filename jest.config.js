@@ -15,5 +15,10 @@ module.exports = {
       statements: 90
     }
   },
-  transform: {}
+  transform: {},
+  coveragePathIgnorePatterns: [
+    "src/index.ts",
+    "src/commands/index.ts",
+    "src/types/index.ts"
+  ]
 };
