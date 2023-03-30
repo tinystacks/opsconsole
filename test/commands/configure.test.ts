@@ -21,9 +21,9 @@ jest.mock('../../src/logger', () => ({
   error: mockLoggerError
 }))
 
-import { login } from '../../src/commands/login';
+import { configure } from '../../src/commands/configure';
 
-describe('login', () => {
+describe('configure', () => {
   afterEach(() => {
     // for mocks
     jest.resetAllMocks();
@@ -34,7 +34,7 @@ describe('login', () => {
     const mockCredentials = { apiKey: 'mock-api-key' };
     mockPrompts.mockResolvedValueOnce(mockCredentials);
 
-    await login();
+    await configure();
 
     expect(mockMkdirSync).toBeCalled();
     expect(mockMkdirSync).toBeCalledWith('/tmp/.ops-console', { recursive: true });
@@ -48,13 +48,13 @@ describe('login', () => {
     const mockError = new Error('Error!');
     mockMkdirSync.mockImplementationOnce(() => { throw mockError; });
 
-    await login();
+    await configure();
 
     expect(mockMkdirSync).toBeCalled();
     expect(mockPrompts).not.toBeCalled();
     expect(mockWriteFileSync).not.toBeCalled();
 
     expect(mockLoggerError).toBeCalled();
-    expect(mockLoggerError).toBeCalledWith(`An error occured during login: ${mockError}`);
+    expect(mockLoggerError).toBeCalledWith(`An error occured during configure: ${mockError}`);
   });
 });

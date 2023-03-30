@@ -35,7 +35,7 @@ describe('get-credentials', () => {
       expect(mockLoggerError).toBeCalled();
       expect(mockLoggerError).toBeCalledWith('Could not read file /tmp/.ops-console/credentials! File does not exist!');
       
-      expect(thrownError.message).toEqual('Cannot find credentials! Try running "ops-cli login" and try again.');
+      expect(thrownError.message).toEqual('Cannot find credentials! Try running "ops-cli configure" and try again.');
     }
   });
   it('logs an error if any other error occurs during file read', () => {
@@ -54,7 +54,7 @@ describe('get-credentials', () => {
       expect(mockLoggerError).toBeCalled();
       expect(mockLoggerError).toBeCalledWith(`Failed to read file /tmp/.ops-console/credentials! ${mockError}`);
 
-      expect(thrownError.message).toEqual('Cannot find credentials! Try running "ops-cli login" and try again.');
+      expect(thrownError.message).toEqual('Cannot find credentials! Try running "ops-cli configure" and try again.');
     }
   });
   it('logs an error if the credentials are not in the file', () => {
@@ -69,7 +69,7 @@ describe('get-credentials', () => {
       expect(mockReadFileSync).toBeCalled();
       expect(mockReadFileSync).toBeCalledWith('/tmp/.ops-console/credentials');
 
-      expect(thrownError.message).toEqual('Cannot find credentials! Try running "ops-cli login" and try again.');
+      expect(thrownError.message).toEqual('Cannot find credentials! Try running "ops-cli configure" and try again.');
     }
   });
   it('returns credentials from tmp file', () => {

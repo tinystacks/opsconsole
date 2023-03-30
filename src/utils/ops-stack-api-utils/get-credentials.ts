@@ -32,7 +32,7 @@ export function getCredentials (): Credentials {
   const credsFile = tryToReadFile(path.join(TMP_DIR, 'credentials'));
   const creds: any = tryToParse(credsFile);
   if (!creds?.apiKey) {
-    throw new Error('Cannot find credentials! Try running "ops-cli login" and try again.');
+    throw new Error('Cannot find credentials! Try running "ops-cli configure" and try again.');
   }
   return creds;
 }

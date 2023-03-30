@@ -19,3 +19,7 @@ export type Credentials = {
 export type GetOptions = {
   consoleName?: string;
 }
+
+export type SignupOptions = {
+  os?: NodeJS.Platform;
+}
