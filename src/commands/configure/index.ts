@@ -11,8 +11,7 @@ async function configure () {
       {
         type: 'password',
         name: 'apiKey',
-        // TODO: fix this link.  Point to where the api key page will be
-        message: 'Enter your TinyStacks API key.  If you do not have one go create one at https://ops.tinystacks.com'
+        message: 'Enter your TinyStacks API key.  If you do not have one, create one at https://ops.tinystacks.com'
       }
       // {
       //   type: 'text',
