@@ -39,7 +39,7 @@ try {
     .action(up);
 
   program.command('deploy')
-    .description('Deploys ops console on a TinyStacks hosted solution. Requires a paid account and an API key.')
+    .description('Deploys ops console on a TinyStacks hosted solution. Requires a free account and an API key.')
     .option('-c, --config-file <config-file>', 'Specifies a config file path. Looks for config.yml in the current working directory by default.')
     .action(deploy);
   
