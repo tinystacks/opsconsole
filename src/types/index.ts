@@ -5,7 +5,7 @@ export enum ImageArchitecture {
 
 export interface UpOptions {
   arch?: ImageArchitecture;
-  template?: string;
+  configFile?: string;
 }
 
 export interface OsOutput {

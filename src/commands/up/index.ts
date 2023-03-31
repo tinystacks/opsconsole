@@ -126,8 +126,8 @@ function validateArchitecture (arch: string) {
   }
 }
 
-function validateTemplateFilePath (template: string) {
-  const absolutePath = path.resolve(template || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
+function validateConfigFilePath (configFile: string) {
+  const absolutePath = path.resolve(configFile || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
   if (fs.existsSync(absolutePath)) {
     return {
       dir: path.dirname(absolutePath),
@@ -160,10 +160,10 @@ async function handleExitSignalCleanup (backendProcess: ChildProcess, frontendPr
 async function up (options: UpOptions) {
   const { 
     arch, 
-    template
+    configFile
   } = options;
   try {
-    const { dir, file } = validateTemplateFilePath(template);
+    const { dir, file } = validateConfigFilePath(configFile);
     const tag = validateArchitecture(arch);
     const dependencies = await getDependencies(dir, file);
     await pullDockerFiles(tag);
