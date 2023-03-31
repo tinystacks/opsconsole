@@ -1,7 +1,8 @@
 import { exec, ExecOptions } from 'child_process';
+import fs from 'fs';
 import { Readable } from 'stream';
 import logger from '../../logger';
-import { OsOutput } from '../../types';
+import { API_IMAGE_ECR_URL, OsOutput, UI_IMAGE_ECR_URL } from '../../types';
 
 export async function runCommandSync (command: string, opts?: ExecOptions): Promise<OsOutput> {
   return new Promise((resolve, reject) => {
@@ -85,6 +86,16 @@ export function runCommand (command: string, opts?: ExecOptions) {
   }
 }
 
+export async function streamToFile (Body: any, filePath: string) {
+  await new Promise<void>((resolve, reject) => {
+    if (Body instanceof Readable) {
+      Body.pipe(fs.createWriteStream(filePath))
+        .on('error', err => reject(err))
+        .on('close', () => resolve());
+    }
+  });
+}
+
 export async function streamToString (stream: Readable) {
   // lets have a ReadableStream as a stream variable
   const chunks = [];
@@ -96,6 +107,22 @@ export async function streamToString (stream: Readable) {
   return Buffer.concat(chunks).toString('utf-8');
 }
 
-export async function sleep (ms: number) {
-  return await new Promise(r => setTimeout(r, ms));
+export function replaceFromInDockerFile (filePath: string, tag: string) {
+  try {
+    const component = filePath.split('.').at(-1);
+    const file = fs.readFileSync(filePath, 'utf-8');
+    const regEx = new RegExp('^FROM.*');
+    let replacedFile: string;
+    if (component === 'api') {
+      replacedFile = file.replace(regEx, `FROM ${API_IMAGE_ECR_URL(tag)}`);
+    } else if (component === 'ui') {
+      replacedFile = file.replace(regEx, `FROM ${UI_IMAGE_ECR_URL(tag)}`);
+    }
+    console.log(replacedFile);
+    fs.writeFileSync(filePath, replacedFile);
+  } catch (e) {
+    logger.error(`File not found: ${filePath}`);
+    throw e;
+  }
+
 }
