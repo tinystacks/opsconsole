@@ -118,11 +118,9 @@ export function replaceFromInDockerFile (filePath: string, tag: string) {
     } else if (component === 'ui') {
       replacedFile = file.replace(regEx, `FROM ${UI_IMAGE_ECR_URL(tag)}`);
     }
-    console.log(replacedFile);
     fs.writeFileSync(filePath, replacedFile);
   } catch (e) {
     logger.error(`File not found: ${filePath}`);
     throw e;
   }
-
 }

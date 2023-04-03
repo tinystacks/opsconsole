@@ -21,7 +21,7 @@ async function getDependencies (dir: string, file: string) {
     const parsedYaml = ConsoleParser.parse(configJson);
     const dependencies = new Set(Object.values(parsedYaml.dependencies));
     const dependenciesString = Array.from(dependencies).join(' ');
-    return dependenciesString;
+    return `"${dependenciesString}"`;
   } catch (e) {
     logger.error('Failed to install dependencies. Please verify that your yaml template is formatted correctly.');
     throw e;
@@ -137,13 +137,13 @@ function validateConfigFilePath (configFile: string) {
   throw new Error(`Specified config file ${absolutePath} does not exist.`);
 }
 
-async function handleExitSignalCleanup (backendProcess: ChildProcess, frontendProcess: ChildProcess) {
+async function handleExitSignalCleanup (backendProcess?: ChildProcess, frontendProcess?: ChildProcess) {
   async function cleanup () {
     logger.info('Cleaning up...');
     fs.unlink(API_FILEPATH, () => { return; });
     fs.unlink(UI_FILEPATH, () => { return; });
-    backendProcess.kill();
-    frontendProcess.kill();
+    backendProcess?.kill();
+    frontendProcess?.kill();
     await runCommandSync('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
   }
   process.on('SIGINT', async () => {
