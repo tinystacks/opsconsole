@@ -23,3 +23,8 @@ export type GetOptions = {
 export type SignupOptions = {
   os?: NodeJS.Platform;
 }
+export interface OsOutput {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
