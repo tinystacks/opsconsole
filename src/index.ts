@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 import { Command, Option } from 'commander';
-import * as colors from 'colors';
+import colors from 'colors';
 import { init, up, deploy } from './commands';
 import logger from './logger';
 const program = new Command();
-// eslint-disable-next-line
-const { version } = require('../package.json');
+import { version } from '../package.json';
+import { DEFAULT_CONFIG_FILENAME } from './types';
 
 function handleError (error: Error) {
   logger.cliError(error);
@@ -28,7 +28,7 @@ try {
   program.command('up')
     .description('Deploys ops console on local servers')
     .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86.  Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
-    .option('-c, --config-file <config-file>', 'Specifies a config file path. Looks for config.yml in the current working directory by default.')
+    .option('-c, --config-file <config-file>', `Specifies a config file path. See the samples folder in this repo for sample config files. Looks for ${DEFAULT_CONFIG_FILENAME}.yml in the current working directory by default.`)
     .action(up);
 
   program.command('deploy')

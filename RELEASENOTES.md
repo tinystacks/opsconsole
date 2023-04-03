@@ -1,1 +1,2 @@
-Readme updates
+- Added runtime widget installation
+- Process killing is more graceful
