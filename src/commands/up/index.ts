@@ -4,14 +4,14 @@ import yaml from 'js-yaml';
 import { YamlConsole } from '@tinystacks/ops-model';
 import logger from '../../logger';
 import { replaceFromInDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
-import { API_IMAGE_ECR_URL, DEFAULT_CONFIG_FILENAME, ImageArchitecture, UI_IMAGE_ECR_URL, UpOptions } from '../../types';
+import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types';
 import { ChildProcess } from 'child_process';
 import { S3 } from '@aws-sdk/client-s3';
 
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
-const API_FILEPATH = 'Dockerfile.api';
-const UI_FILEPATH = 'Dockerfile.ui';
+const API_FILEPATH = '/tmp/Dockerfile.api';
+const UI_FILEPATH = '/tmp/Dockerfile.ui';
 
 async function getDependencies (dir: string, file: string) {
   try {
@@ -61,16 +61,14 @@ async function pullDockerFiles (tag: string) {
   replaceFromInDockerFile(UI_FILEPATH, tag);
 }
 
-function runBackend (tag: string, dependencies: string, dir: string, file: string) {
+function runBackend (dependencies: string, dir: string, file: string) {
   try {
     logger.info('Launching backend on localhost:8000');
     const commands = [
-      // `docker pull public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}`,
-      `docker build --build-arg DEPENDENCIES=${dependencies} -f Dockerfile.api -t api:latest . || exit 1`,
+      `docker build --build-arg DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api . || exit 1`,
       'docker container stop ops-api || true',
       'docker container rm ops-api || true',
-      // `docker run --name ops-api -v /tmp/${consoleName}:/dependencies -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 "ops-api:0.0.0";`
-      `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console "${API_IMAGE_ECR_URL(tag)}";`
+      `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api;`
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
@@ -85,15 +83,14 @@ function runBackend (tag: string, dependencies: string, dir: string, file: strin
   }
 }
 
-function runFrontend (tag: string, dependencies: string) {
+function runFrontend (dependencies: string) {
   try {
     logger.info('Launching frontend on localhost:3000');
     const commands = [
-      // `docker pull public.ecr.aws/tinystacks/ops-frontend:latest${tag ? `-${tag}` : ''}`,
-      `docker build --build-arg DEPENDENCIES=${dependencies} -f Dockerfile.ui -t ui:latest . || exit 1`,
+      `docker build --build-arg DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend . || exit 1`,
       'docker container stop ops-frontend || true',
       'docker container rm ops-frontend || true',
-      `docker run --name ops-frontend -i -p 3000:3000 --network=ops-console "${UI_IMAGE_ECR_URL(tag)}";`
+      'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend;'
     ].join(';\n');
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
@@ -137,23 +134,23 @@ function validateConfigFilePath (configFile: string) {
   throw new Error(`Specified config file ${absolutePath} does not exist.`);
 }
 
-async function handleExitSignalCleanup (backendProcess?: ChildProcess, frontendProcess?: ChildProcess) {
-  async function cleanup () {
+function handleExitSignalCleanup (backendProcess?: ChildProcess, frontendProcess?: ChildProcess) {
+  function cleanup () {
     logger.info('Cleaning up...');
     fs.unlink(API_FILEPATH, () => { return; });
     fs.unlink(UI_FILEPATH, () => { return; });
     backendProcess?.kill();
     frontendProcess?.kill();
-    await runCommandSync('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    runCommand('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
   }
-  process.on('SIGINT', async () => {
-    await cleanup();
+  process.on('SIGINT', () => {
+    cleanup();
   });
-  process.on('SIGQUIT', async () => {
-    await cleanup();
+  process.on('SIGQUIT', () => {
+    cleanup();
   });
-  process.on('SIGTERM', async () => {
-    await cleanup();
+  process.on('SIGTERM', () => {
+    cleanup();
   }); 
 }
 
@@ -168,9 +165,9 @@ async function up (options: UpOptions) {
     const dependencies = await getDependencies(dir, file);
     await pullDockerFiles(tag);
     await startNetwork();
-    const backendProcess = runBackend(tag, dependencies, dir, file);
-    const frontendProcess = runFrontend(tag, dependencies);
-    await handleExitSignalCleanup(backendProcess, frontendProcess);
+    const backendProcess = runBackend(dependencies, dir, file);
+    const frontendProcess = runFrontend(dependencies);
+    handleExitSignalCleanup(backendProcess, frontendProcess);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'An unknown error occurred';
     logger.error(message);
