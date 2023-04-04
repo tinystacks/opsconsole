@@ -2,10 +2,20 @@ const mockResolve = jest.fn();
 const mockDirname = jest.fn();
 const mockBasename = jest.fn();
 const mockExistsSync = jest.fn();
+const mockReadFileSync = jest.fn();
+const mockUnlink = jest.fn();
 const mockLoggerError = jest.fn();
 const mockLoggerSucces = jest.fn();
+const mockLoggerInfo = jest.fn();
 const mockRunCommand = jest.fn();
 const mockPromisifyChildProcess = jest.fn();
+const mockS3 = jest.fn();
+const mockGetObject = jest.fn();
+const mockLoad = jest.fn();
+const mockParse = jest.fn();
+const mockStreamToFile = jest.fn();
+const mockReplaceFromInDockerFile = jest.fn();
+const mockGetConsoleParser = jest.fn();
 
 jest.mock('path', () => ({
   resolve: mockResolve,
@@ -14,18 +24,43 @@ jest.mock('path', () => ({
 }));
 
 jest.mock('fs', () => ({
-  existsSync: mockExistsSync
+  existsSync: mockExistsSync,
+  readFileSync: mockReadFileSync,
+  unlink: mockUnlink
 }));
 
 jest.mock('../../src/logger', () => ({
   error: mockLoggerError,
-  success: mockLoggerSucces
+  success: mockLoggerSucces,
+  info: mockLoggerInfo
 }))
 
 jest.mock('../../src/utils/os', () => ({
   runCommand: mockRunCommand,
-  promisifyChildProcess: mockPromisifyChildProcess
+  promisifyChildProcess: mockPromisifyChildProcess,
+  streamToFile: mockStreamToFile,
+  replaceFromInDockerFile: mockReplaceFromInDockerFile
 }));
+
+jest.mock('@aws-sdk/client-s3', () => ({
+  S3: mockS3
+}));
+
+jest.mock('js-yaml', () => ({
+  load: mockLoad
+}))
+
+jest.mock('../../src/utils/ops-core', () => ({
+  getConsoleParser: mockGetConsoleParser
+}));
+
+const mockConsoleParser = {
+  parse: mockParse
+};
+
+const mockS3Client = {
+  getObject: mockGetObject
+};
 
 import { up } from '../../src/commands/up';
 import { DEFAULT_CONFIG_FILENAME } from '../../src/constants';
@@ -33,6 +68,10 @@ import { ImageArchitecture } from '../../src/types';
 import { MockChildProcess } from '../mocks/MockChildProcess';
 
 describe('up', () => {
+  beforeEach(() => {
+    mockS3.mockReturnValue(mockS3Client);
+    mockGetConsoleParser.mockResolvedValue(mockConsoleParser);
+  });
   afterEach(() => {
     // for mocks
     jest.resetAllMocks();
@@ -57,8 +96,13 @@ describe('up', () => {
   it('logs an error if the network fails to start', async () => {
     mockResolve.mockReturnValue('./config.yml');
     mockExistsSync.mockReturnValue(true);
-    mockDirname.mockReturnValue('./')
-    mockBasename.mockReturnValue('config.yml')
+    mockDirname.mockReturnValue('./');
+    mockBasename.mockReturnValue('config.yml');
+    mockReadFileSync.mockReturnValue('');
+    mockLoad.mockReturnValue({});
+    mockParse.mockReturnValue({ dependencies: {} });
+    mockGetObject.mockResolvedValue({ Body: '' });
+
     const mockChildProcess = new MockChildProcess();
     mockRunCommand.mockReturnValue(mockChildProcess);
     mockPromisifyChildProcess.mockRejectedValueOnce({
@@ -98,6 +142,10 @@ describe('up', () => {
     mockExistsSync.mockReturnValue(true);
     mockDirname.mockReturnValue('./')
     mockBasename.mockReturnValue('config.yml')
+    mockReadFileSync.mockReturnValue('');
+    mockLoad.mockReturnValue({});
+    mockParse.mockReturnValue({ dependencies: {} });
+    mockGetObject.mockResolvedValue({ Body: '' });
     const mockNetworkChildProcess = new MockChildProcess();
     mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
     mockPromisifyChildProcess.mockResolvedValueOnce({
@@ -125,21 +173,26 @@ describe('up', () => {
     expect(mockBasename).toBeCalledWith('./config.yml');
 
     expect(mockRunCommand).toBeCalled();
-    expect(mockRunCommand).toBeCalledTimes(3);
+    expect(mockRunCommand).toBeCalledTimes(2);
     
     expect(mockPromisifyChildProcess).toBeCalled();
     expect(mockPromisifyChildProcess).toBeCalledTimes(1);
     expect(mockPromisifyChildProcess).toBeCalledWith(mockNetworkChildProcess);
 
     expect(mockLoggerError).toBeCalled();
-    expect(mockLoggerError).toBeCalledTimes(1);
+    expect(mockLoggerError).toBeCalledTimes(2);
     expect(mockLoggerError).toBeCalledWith(`Error launching ops console backend: ${mockError}`);
+    expect(mockLoggerError).toBeCalledWith(mockError.message);
   });
   it('logs an error if ops-ui fails to start', async () => {
     mockResolve.mockReturnValue('./config.yml');
     mockExistsSync.mockReturnValue(true);
-    mockDirname.mockReturnValue('./')
-    mockBasename.mockReturnValue('config.yml')
+    mockDirname.mockReturnValue('./');
+    mockBasename.mockReturnValue('config.yml');
+    mockReadFileSync.mockReturnValue('');
+    mockLoad.mockReturnValue({});
+    mockParse.mockReturnValue({ dependencies: {} });
+    mockGetObject.mockResolvedValue({ Body: '' });
     const mockNetworkChildProcess = new MockChildProcess();
     mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
     mockPromisifyChildProcess.mockResolvedValueOnce({
@@ -174,14 +227,19 @@ describe('up', () => {
     expect(mockPromisifyChildProcess).toBeCalledWith(mockNetworkChildProcess);
 
     expect(mockLoggerError).toBeCalled();
-    expect(mockLoggerError).toBeCalledTimes(1);
+    expect(mockLoggerError).toBeCalledTimes(2);
     expect(mockLoggerError).toBeCalledWith(`Error launching ops console frontend: ${mockError}`);
+    expect(mockLoggerError).toBeCalledWith(mockError.message);
   });
   it('validates inputs, starts network, and runs api and ui images', async () => {
     mockResolve.mockReturnValue('./config.yml');
     mockExistsSync.mockReturnValue(true);
-    mockDirname.mockReturnValue('./')
-    mockBasename.mockReturnValue('config.yml')
+    mockDirname.mockReturnValue('./');
+    mockBasename.mockReturnValue('config.yml');
+    mockReadFileSync.mockReturnValue('');
+    mockLoad.mockReturnValue({});
+    mockParse.mockReturnValue({ dependencies: {} });
+    mockGetObject.mockResolvedValue({ Body: '' });
     const mockNetworkChildProcess = new MockChildProcess();
     mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
     mockPromisifyChildProcess.mockResolvedValueOnce({
@@ -229,8 +287,12 @@ describe('up', () => {
     it('x64', async () => {
       mockResolve.mockReturnValue('./config.yml');
       mockExistsSync.mockReturnValue(true);
-      mockDirname.mockReturnValue('./')
-      mockBasename.mockReturnValue('config.yml')
+      mockDirname.mockReturnValue('./');
+      mockBasename.mockReturnValue('config.yml');
+      mockReadFileSync.mockReturnValue('');
+      mockLoad.mockReturnValue({});
+      mockParse.mockReturnValue({ dependencies: {} });
+      mockGetObject.mockResolvedValue({ Body: '' });
       const mockNetworkChildProcess = new MockChildProcess();
       mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
       mockPromisifyChildProcess.mockResolvedValueOnce({
@@ -250,19 +312,22 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(3);
 
-      const apiCommands = mockRunCommand.mock.calls[1][0];
-      expect(apiCommands.startsWith('docker pull public.ecr.aws/tinystacks/ops-api:latest-x86;\n')).toBe(true);
-      
-      const uiCommands = mockRunCommand.mock.calls[2][0];
-      expect(uiCommands.startsWith('docker pull public.ecr.aws/tinystacks/ops-frontend:latest-x86;\n')).toBe(true);
+      expect(mockReplaceFromInDockerFile).toBeCalled();
+      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('/tmp/Dockerfile.api', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('/tmp/Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
     it('ia32', async () => {
       mockResolve.mockReturnValue('./config.yml');
       mockExistsSync.mockReturnValue(true);
-      mockDirname.mockReturnValue('./')
-      mockBasename.mockReturnValue('config.yml')
+      mockDirname.mockReturnValue('./');
+      mockBasename.mockReturnValue('config.yml');
+      mockReadFileSync.mockReturnValue('');
+      mockLoad.mockReturnValue({});
+      mockParse.mockReturnValue({ dependencies: {} });
+      mockGetObject.mockResolvedValue({ Body: '' });
       const mockNetworkChildProcess = new MockChildProcess();
       mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
       mockPromisifyChildProcess.mockResolvedValueOnce({
@@ -282,19 +347,22 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(3);
 
-      const apiCommands = mockRunCommand.mock.calls[1][0];
-      expect(apiCommands.startsWith('docker pull public.ecr.aws/tinystacks/ops-api:latest-x86;\n')).toBe(true);
-      
-      const uiCommands = mockRunCommand.mock.calls[2][0];
-      expect(uiCommands.startsWith('docker pull public.ecr.aws/tinystacks/ops-frontend:latest-x86;\n')).toBe(true);
+      expect(mockReplaceFromInDockerFile).toBeCalled();
+      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('/tmp/Dockerfile.api', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('/tmp/Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
     it('arm', async () => {
       mockResolve.mockReturnValue('./config.yml');
       mockExistsSync.mockReturnValue(true);
-      mockDirname.mockReturnValue('./')
-      mockBasename.mockReturnValue('config.yml')
+      mockDirname.mockReturnValue('./');
+      mockBasename.mockReturnValue('config.yml');
+      mockReadFileSync.mockReturnValue('');
+      mockLoad.mockReturnValue({});
+      mockParse.mockReturnValue({ dependencies: {} });
+      mockGetObject.mockResolvedValue({ Body: '' });
       const mockNetworkChildProcess = new MockChildProcess();
       mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
       mockPromisifyChildProcess.mockResolvedValueOnce({
@@ -314,19 +382,22 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(3);
 
-      const apiCommands = mockRunCommand.mock.calls[1][0];
-      expect(apiCommands.startsWith('docker pull public.ecr.aws/tinystacks/ops-api:latest-arm;\n')).toBe(true);
-      
-      const uiCommands = mockRunCommand.mock.calls[2][0];
-      expect(uiCommands.startsWith('docker pull public.ecr.aws/tinystacks/ops-frontend:latest-arm;\n')).toBe(true);
+      expect(mockReplaceFromInDockerFile).toBeCalled();
+      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('/tmp/Dockerfile.api', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('/tmp/Dockerfile.ui', 'arm');
 
       expect(mockLoggerError).not.toBeCalled();
     });
     it('arm64', async () => {
       mockResolve.mockReturnValue('./config.yml');
       mockExistsSync.mockReturnValue(true);
-      mockDirname.mockReturnValue('./')
-      mockBasename.mockReturnValue('config.yml')
+      mockDirname.mockReturnValue('./');
+      mockBasename.mockReturnValue('config.yml');
+      mockReadFileSync.mockReturnValue('');
+      mockLoad.mockReturnValue({});
+      mockParse.mockReturnValue({ dependencies: {} });
+      mockGetObject.mockResolvedValue({ Body: '' });
       const mockNetworkChildProcess = new MockChildProcess();
       mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
       mockPromisifyChildProcess.mockResolvedValueOnce({
@@ -346,19 +417,22 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(3);
 
-      const apiCommands = mockRunCommand.mock.calls[1][0];
-      expect(apiCommands.startsWith('docker pull public.ecr.aws/tinystacks/ops-api:latest-arm;\n')).toBe(true);
-      
-      const uiCommands = mockRunCommand.mock.calls[2][0];
-      expect(uiCommands.startsWith('docker pull public.ecr.aws/tinystacks/ops-frontend:latest-arm;\n')).toBe(true);
+      expect(mockReplaceFromInDockerFile).toBeCalled();
+      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('/tmp/Dockerfile.api', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('/tmp/Dockerfile.ui', 'arm');
 
       expect(mockLoggerError).not.toBeCalled();
     });
     it('throws for unsupported architecture', async () => {
       mockResolve.mockReturnValue('./config.yml');
       mockExistsSync.mockReturnValue(true);
-      mockDirname.mockReturnValue('./')
-      mockBasename.mockReturnValue('config.yml')
+      mockDirname.mockReturnValue('./');
+      mockBasename.mockReturnValue('config.yml');
+      mockReadFileSync.mockReturnValue('');
+      mockLoad.mockReturnValue({});
+      mockParse.mockReturnValue({ dependencies: {} });
+      mockGetObject.mockResolvedValue({ Body: '' });
       const mockNetworkChildProcess = new MockChildProcess();
       mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
       mockPromisifyChildProcess.mockResolvedValueOnce({
@@ -380,5 +454,56 @@ describe('up', () => {
       expect(mockLoggerError).toBeCalled();
       expect(mockLoggerError).toBeCalledWith('ops does not currently support mips');
     });
+  });
+  it('handleExitSignalCleanup', async () => {
+    const mockEventOn = jest.fn();
+    let eventCallback = () => {};
+    mockEventOn.mockImplementation((event, cb) => { eventCallback = cb });
+    jest.spyOn(process, 'on').mockImplementation(mockEventOn);
+    mockResolve.mockReturnValue('./config.yml');
+    mockExistsSync.mockReturnValue(true);
+    mockDirname.mockReturnValue('./');
+    mockBasename.mockReturnValue('config.yml');
+    mockReadFileSync.mockReturnValue('');
+    mockLoad.mockReturnValue({});
+    mockParse.mockReturnValue({ dependencies: {} });
+    mockGetObject.mockResolvedValue({ Body: '' });
+    const mockNetworkChildProcess = new MockChildProcess();
+    mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
+    mockPromisifyChildProcess.mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: '',
+      stderr: ''
+    });
+    const mockOpsApiChildProcess = new MockChildProcess();
+    mockRunCommand.mockReturnValueOnce(mockOpsApiChildProcess);
+    const mockOpsUiChildProcess = new MockChildProcess();
+    mockRunCommand.mockReturnValueOnce(mockOpsUiChildProcess);
+    
+    await up({});
+
+    expect(mockEventOn).toBeCalled();
+    expect(mockEventOn).toBeCalledTimes(3);
+    expect(mockEventOn).toBeCalledWith('SIGINT', expect.any(Function));
+    expect(mockEventOn).toBeCalledWith('SIGQUIT', expect.any(Function));
+    expect(mockEventOn).toBeCalledWith('SIGTERM', expect.any(Function));
+
+    eventCallback();
+
+    expect(mockLoggerInfo).toBeCalled();
+    expect(mockLoggerInfo).toBeCalledWith('Cleaning up...');
+
+    expect(mockUnlink).toBeCalled();
+    expect(mockUnlink).toBeCalledTimes(2);
+    expect(mockUnlink).toBeCalledWith('/tmp/Dockerfile.api', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('/tmp/Dockerfile.ui', expect.any(Function));
+
+    expect(mockOpsApiChildProcess.kill).toBeCalled();
+    
+    expect(mockOpsUiChildProcess.kill).toBeCalled();
+
+    expect(mockRunCommand).toBeCalled();
+    expect(mockRunCommand).toBeCalledTimes(4);
+    expect(mockRunCommand.mock.calls[3][0]).toEqual('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
   });
 });

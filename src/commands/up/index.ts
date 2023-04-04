@@ -9,6 +9,7 @@ import { ImageArchitecture, UpOptions } from '../../types';
 import { DEFAULT_CONFIG_FILENAME } from '../../constants';
 import { ChildProcess } from 'child_process';
 import { S3 } from '@aws-sdk/client-s3';
+import { getConsoleParser } from '../../utils/ops-core';
 
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
@@ -40,7 +41,7 @@ async function getDependencies (dir: string, file: string) {
   try {
     const configFile = fs.readFileSync(`${dir}/${file}`);
     const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
-    const { ConsoleParser } = await import('@tinystacks/ops-core');
+    const ConsoleParser = await getConsoleParser();
     const parsedYaml = ConsoleParser.parse(configJson);
     const dependencies = new Set(Object.values(parsedYaml.dependencies));
     const dependenciesString = Array.from(dependencies).join(' ');
@@ -50,20 +51,6 @@ async function getDependencies (dir: string, file: string) {
     throw e;
   }
 }
-
-// async function startNetwork () {
-//   try {
-//     logger.info('Launching ops-console docker network');
-//     const commands = [
-//       'docker network rm ops-console',
-//       'docker network create -d bridge ops-console'
-//     ].join('\n');
-//     await runCommandSync(commands);
-//   } catch (e) {
-//     logger.error('Error launching ops console network');
-//     throw e;
-//   }
-// }
 
 async function pullDockerFiles (tag: string) {
   const s3Client = new S3({
@@ -163,15 +150,9 @@ function handleExitSignalCleanup (backendProcess?: ChildProcess, frontendProcess
     frontendProcess?.kill();
     runCommand('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
   }
-  process.on('SIGINT', () => {
-    cleanup();
-  });
-  process.on('SIGQUIT', () => {
-    cleanup();
-  });
-  process.on('SIGTERM', () => {
-    cleanup();
-  }); 
+  process.on('SIGINT', cleanup);
+  process.on('SIGQUIT', cleanup);
+  process.on('SIGTERM', cleanup); 
 }
 
 async function up (options: UpOptions) {

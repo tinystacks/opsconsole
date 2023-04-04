@@ -1,7 +1,7 @@
-import { jest } from '@jest/globals';
 const mockReadFileSync = jest.fn();
 const mockLoad = jest.fn();
 const mockParse = jest.fn();
+const mockGetConsoleParser = jest.fn();
 
 jest.mock('fs', () => ({
   readFileSync: mockReadFileSync
@@ -11,12 +11,13 @@ jest.mock('js-yaml', () => ({
   load: mockLoad
 }));
 
-jest.unstable_mockModule('@tinystacks/ops-core', () => ({
-  __esmModule: true,
-  ConsoleParser: {
-    parse: mockParse
-  }
+jest.mock('../../src/utils/ops-core', () => ({
+  getConsoleParser: mockGetConsoleParser
 }));
+
+const mockConsoleParser = {
+  parse: mockParse
+};
 
 import { parseConfig } from '../../src/utils/config';
 
@@ -33,6 +34,9 @@ const mockConfigJson = {
 const mockConsle = { name: 'console' };
 
 describe('config utils', () => {
+  beforeEach(() => {
+    mockGetConsoleParser.mockResolvedValue(mockConsoleParser as never);
+  });
   afterEach(() => {
     // for mocks
     jest.resetAllMocks();

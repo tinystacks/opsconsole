@@ -3,6 +3,7 @@ export class MockChildProcess {
   stderrCb: (data: string) => void;
   childProcessErrorCb: (error: Error) => void;
   childProcessExitCb: (code: number, signal?: string) => void;
+  kill: jest.Mock;
   stdout: {
     on: (_event: string, callback: (data: string) => void) => void
   };
@@ -22,6 +23,7 @@ export class MockChildProcess {
         self.stderrCb = callback;
       }
     };
+    this.kill = jest.fn();
   }
   on (event: string, callback: (...args: any) => void) {
     if (event === 'error') {

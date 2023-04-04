@@ -52,7 +52,7 @@ export async function runCommandSync (command: string, opts?: ExecOptions): Prom
   });
 }
 
-export function runCommand (command: string, opts?: ExecOptions) {
+export function runCommand (command: string, opts?: ExecOptions): ChildProcess {
   try {
     if (opts) {
       opts.env = { ...process.env, ...(opts.env || {}) };
@@ -87,7 +87,7 @@ export function runCommand (command: string, opts?: ExecOptions) {
   }
 }
 
-export async function streamToFile (Body: any, filePath: string) {
+export async function streamToFile (Body: any, filePath: string): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     if (Body instanceof Readable) {
       Body.pipe(fs.createWriteStream(filePath))
@@ -97,7 +97,7 @@ export async function streamToFile (Body: any, filePath: string) {
   });
 }
 
-export async function streamToString (stream: Readable) {
+export async function streamToString (stream: Readable): Promise<string> {
   // lets have a ReadableStream as a stream variable
   const chunks = [];
 
@@ -108,7 +108,7 @@ export async function streamToString (stream: Readable) {
   return Buffer.concat(chunks).toString('utf-8');
 }
 
-export async function promisifyChildProcess (childProcess: ChildProcess) {
+export async function promisifyChildProcess (childProcess: ChildProcess): Promise<OsOutput> {
   return new Promise((resolve, reject) => {
     const standardOut: string[] = [];
     const standardError: string[] = [];
@@ -144,7 +144,7 @@ export async function promisifyChildProcess (childProcess: ChildProcess) {
   });
 }
 
-export function replaceFromInDockerFile (filePath: string, tag: string) {
+export function replaceFromInDockerFile (filePath: string, tag?: string): void {
   try {
     const component = filePath.split('.').at(-1);
     const file = fs.readFileSync(filePath, 'utf-8');

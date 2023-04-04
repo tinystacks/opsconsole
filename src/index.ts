@@ -12,7 +12,6 @@ import {
 } from './commands';
 import logger from './logger';
 const program = new Command();
-import { version } from '../package.json';
 import { DEFAULT_CONFIG_FILENAME } from './constants';
 
 function handleError (error: Error) {
@@ -23,6 +22,8 @@ function handleError (error: Error) {
 try {
   colors.enable();
 
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { version } = require('../package.json');
   program
     .name('ops-cli')
     .description('TinyStacks opsconsole command line interface')
