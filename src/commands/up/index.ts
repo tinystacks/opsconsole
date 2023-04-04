@@ -3,41 +3,51 @@ import * as path from 'path';
 import yaml from 'js-yaml';
 import { YamlConsole } from '@tinystacks/ops-model';
 import logger from '../../logger';
-import { replaceFromInDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
-import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types';
+import isNil from 'lodash.isnil';
+import { promisifyChildProcess, replaceFromInDockerFile, runCommand, streamToFile } from '../../utils/os';
+import { ImageArchitecture, UpOptions } from '../../types';
+import { DEFAULT_CONFIG_FILENAME } from '../../constants';
 import { ChildProcess } from 'child_process';
 import { S3 } from '@aws-sdk/client-s3';
+import { getConsoleParser } from '../../utils/ops-core';
 
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 const API_FILEPATH = '/tmp/Dockerfile.api';
 const UI_FILEPATH = '/tmp/Dockerfile.ui';
 
+async function startNetwork () {
+  try {
+    const commands = [
+      'docker network rm ops-console 2> /dev/null',
+      'docker network create -d bridge ops-console 2> /dev/null'
+    ].join('\n');
+    await promisifyChildProcess(runCommand(commands)).catch((e) => {
+      const isChildProcessOutput: boolean = !Number.isNaN(e.exitCode) && !isNil(e.stdout) && !isNil(e.stderr);
+      if (isChildProcessOutput) {
+        if (e.signal) {
+          throw new Error(`Process was interrupted by signal ${e.signal}! Exiting with code ${e.exitCode}...`);
+        }
+        throw new Error(`Commands to start docker network failed with exit code ${e.exitCode}!\n\t stdout: ${e.stdout}\n\t stderr: ${e.stderr}`);
+      }
+      throw e;
+    });
+  } catch (error) {
+    logger.error('Error launching ops console network!');
+    throw error;
+  }
+}
 async function getDependencies (dir: string, file: string) {
   try {
     const configFile = fs.readFileSync(`${dir}/${file}`);
     const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
-    const { ConsoleParser } = await import('@tinystacks/ops-core');
+    const ConsoleParser = await getConsoleParser();
     const parsedYaml = ConsoleParser.parse(configJson);
     const dependencies = new Set(Object.values(parsedYaml.dependencies));
     const dependenciesString = Array.from(dependencies).join(' ');
     return `"${dependenciesString}"`;
   } catch (e) {
     logger.error('Failed to install dependencies. Please verify that your yaml template is formatted correctly.');
-    throw e;
-  }
-}
-
-async function startNetwork () {
-  try {
-    logger.info('Launching ops-console docker network');
-    const commands = [
-      'docker network rm ops-console',
-      'docker network create -d bridge ops-console'
-    ].join('\n');
-    await runCommandSync(commands);
-  } catch (e) {
-    logger.error('Error launching ops console network');
     throw e;
   }
 }
@@ -106,10 +116,7 @@ function runFrontend (dependencies: string) {
 }
 
 function validateArchitecture (arch: string) {
-  if (arch) {
-    return arch;
-  }
-  switch (process.arch) {
+  switch (arch) {
     case 'x64':
       return ImageArchitecture.x86;
     case 'ia32':
@@ -143,20 +150,14 @@ function handleExitSignalCleanup (backendProcess?: ChildProcess, frontendProcess
     frontendProcess?.kill();
     runCommand('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
   }
-  process.on('SIGINT', () => {
-    cleanup();
-  });
-  process.on('SIGQUIT', () => {
-    cleanup();
-  });
-  process.on('SIGTERM', () => {
-    cleanup();
-  }); 
+  process.on('SIGINT', cleanup);
+  process.on('SIGQUIT', cleanup);
+  process.on('SIGTERM', cleanup); 
 }
 
 async function up (options: UpOptions) {
   const { 
-    arch, 
+    arch = process.arch, 
     configFile
   } = options;
   try {
