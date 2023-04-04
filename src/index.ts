@@ -29,6 +29,7 @@ try {
     .description('Deploys ops console on local servers')
     .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86.  Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
     .option('-c, --config-file <config-file>', `Specifies a config file path. See the samples folder in this repo for sample config files. Looks for ${DEFAULT_CONFIG_FILENAME}.yml in the current working directory by default.`)
+    .option('-v, --verbose', 'Displays details about the running command.')
     .action(up);
 
   program.command('deploy')

@@ -6,6 +6,7 @@ export enum ImageArchitecture {
 export interface UpOptions {
   arch?: ImageArchitecture;
   configFile?: string;
+  verbose: boolean;
 }
 
 export interface OsOutput {
