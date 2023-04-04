@@ -5,38 +5,54 @@ import { YamlConsole } from '@tinystacks/ops-model';
 import { S3 } from '@aws-sdk/client-s3';
 import { ChildProcess } from 'child_process';
 import logger from '../../logger';
-import { replaceFromInDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
-import { DEFAULT_CONFIG_FILENAME, ImageArchitecture, UpOptions } from '../../types';
+import isNil from 'lodash.isnil';
+import { promisifyChildProcess, replaceFromInDockerFile, runCommand, streamToFile } from '../../utils/os';
+import { ImageArchitecture, UpOptions } from '../../types';
+import { DEFAULT_CONFIG_FILENAME } from '../../constants';
+import { getConsoleParser } from '../../utils/ops-core';
+
+// User experience/README notes
+// note format for dependencies in yaml
+// need a way to fail early if packages don't exist
+// Note how long it may take for images to build
 
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 const API_FILEPATH = '/tmp/Dockerfile.api';
 const UI_FILEPATH = '/tmp/Dockerfile.ui';
 
+async function startNetwork () {
+  try {
+    const commands = [
+      'docker network rm ops-console 2> /dev/null',
+      'docker network create -d bridge ops-console 2> /dev/null'
+    ].join('\n');
+    await promisifyChildProcess(runCommand(commands)).catch((e) => {
+      const isChildProcessOutput: boolean = !Number.isNaN(e.exitCode) && !isNil(e.stdout) && !isNil(e.stderr);
+      if (isChildProcessOutput) {
+        if (e.signal) {
+          throw new Error(`Process was interrupted by signal ${e.signal}! Exiting with code ${e.exitCode}...`);
+        }
+        throw new Error(`Commands to start docker network failed with exit code ${e.exitCode}!\n\t stdout: ${e.stdout}\n\t stderr: ${e.stderr}`);
+      }
+      throw e;
+    });
+  } catch (error) {
+    logger.error('Error launching ops console network!');
+    throw error;
+  }
+}
 async function getDependencies (dir: string, file: string) {
   try {
     const configFile = fs.readFileSync(`${dir}/${file}`);
     const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
-    const { ConsoleParser } = await import('@tinystacks/ops-core');
+    const ConsoleParser = await getConsoleParser();
     const parsedYaml = ConsoleParser.parse(configJson);
     const dependencies = new Set(Object.values(parsedYaml.dependencies));
     const dependenciesString = Array.from(dependencies).join(' ');
     return `"${dependenciesString}"`;
   } catch (e) {
     logger.error('Failed to install dependencies. Please verify that your yaml template is formatted correctly.');
-    throw e;
-  }
-}
-
-async function startNetwork (verbose: boolean) {
-  try {
-    const commands = [
-      'docker network rm ops-console',
-      'docker network create -d bridge ops-console'
-    ].join('\n');
-    await runCommandSync(commands, { verbose });
-  } catch (e) {
-    logger.error('Error launching ops console network');
     throw e;
   }
 }
@@ -60,7 +76,7 @@ async function pullDockerFiles (tag: string) {
   replaceFromInDockerFile(UI_FILEPATH, tag);
 }
 
-function runBackend (dependencies: string, dir: string, file: string, verbose: boolean) {
+function runBackend (dependencies: string, dir: string, file: string) {
   try {
     logger.info('Launching backend on 0.0.0.0:8000. This may take a moment.');
     const commands = [
@@ -69,7 +85,7 @@ function runBackend (dependencies: string, dir: string, file: string, verbose: b
       'docker container rm ops-api || true',
       `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api;`
     ].join(';\n');
-    const childProcess = runCommand(commands, { verbose });
+    const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
       if (data.includes(BACKEND_SUCCESS_INDICATOR)) { 
         logger.success('Ops console backend now running on http://0.0.0.0:8000');
@@ -91,7 +107,7 @@ function runFrontend (dependencies: string, verbose: boolean, open: any) {
       'docker container rm ops-frontend || true',
       'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend;'
     ].join(';\n');
-    const childProcess = runCommand(commands, { verbose });
+    const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
       if (data.includes(FRONTEND_SUCCESS_INDICATOR )) {
         logger.success('Ops console frontend now running on http://0.0.0.0:3000');
@@ -106,10 +122,9 @@ function runFrontend (dependencies: string, verbose: boolean, open: any) {
 }
 
 function validateArchitecture (arch: string) {
-  if (arch) {
-    return arch;
-  }
-  switch (process.arch) {
+  switch (arch) {
+    case 'x86':
+      return ImageArchitecture.x86;
     case 'x64':
       return ImageArchitecture.x86;
     case 'ia32':
@@ -143,20 +158,14 @@ function handleExitSignalCleanup (backendProcess: ChildProcess, frontendProcess:
     frontendProcess.kill();
     runCommand('docker stop ops-frontend ops-api || true; docker network rm ops-console || true', { verbose });
   }
-  process.on('SIGINT', () => {
-    cleanup();
-  });
-  process.on('SIGQUIT', () => {
-    cleanup();
-  });
-  process.on('SIGTERM', () => {
-    cleanup();
-  }); 
+  process.on('SIGINT', cleanup);
+  process.on('SIGQUIT', cleanup);
+  process.on('SIGTERM', cleanup); 
 }
 
 async function up (options: UpOptions) {
   const { 
-    arch, 
+    arch = process.arch, 
     configFile,
     verbose = false
   } = options;
@@ -165,7 +174,7 @@ async function up (options: UpOptions) {
     const tag = validateArchitecture(arch);
     const dependencies = await getDependencies(dir, file);
     await pullDockerFiles(tag);
-    await startNetwork(verbose);
+    await startNetwork();
     const open = await import('open');
     const backendProcess = runBackend(dependencies, dir, file, verbose);
     const frontendProcess = runFrontend(dependencies, verbose, open);

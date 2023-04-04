@@ -1,2 +1,1 @@
-- Added runtime widget installation
-- Process killing is more graceful
+SaaS cli integration
