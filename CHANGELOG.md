@@ -1,3 +1,7 @@
+v0.0.4
+---
+- Just bump version
+ 
 v0.0.2
 ---
 Small patch for logging in up command
