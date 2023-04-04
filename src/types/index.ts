@@ -3,23 +3,28 @@ export enum ImageArchitecture {
   x86 = 'x86'
 }
 
-export interface UpOptions {
-  arch?: ImageArchitecture;
+export interface CommonOptions {
   configFile?: string;
 }
 
+export interface UpOptions extends CommonOptions {
+  arch?: ImageArchitecture;
+}
+
+export type Credentials = {
+  apiKey: string;
+  groupName?: string;
+};
+
+export type GetOptions = {
+  consoleName?: string;
+}
+
+export type SignupOptions = {
+  os?: NodeJS.Platform;
+}
 export interface OsOutput {
   stdout: string;
   stderr: string;
   exitCode: number;
-}
-
-export const DEFAULT_CONFIG_FILENAME = 'config.yml';
-
-export function API_IMAGE_ECR_URL (tag: string) {
-  return `public.ecr.aws/tinystacks/ops-api:latest${tag ? `-${tag}` : ''}`;
-}
-
-export function UI_IMAGE_ECR_URL (tag: string) {
-  return `public.ecr.aws/tinystacks/ops-frontend:latest${tag ? `-${tag}` : ''}`;
 }

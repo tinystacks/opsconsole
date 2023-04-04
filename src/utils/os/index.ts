@@ -1,8 +1,9 @@
-import { exec, ExecOptions } from 'child_process';
+import { ChildProcess, exec, ExecOptions } from 'child_process';
 import fs from 'fs';
 import { Readable } from 'stream';
 import logger from '../../logger';
-import { API_IMAGE_ECR_URL, OsOutput, UI_IMAGE_ECR_URL } from '../../types';
+import { OsOutput } from '../../types';
+import { API_IMAGE_ECR_URL, UI_IMAGE_ECR_URL } from '../../constants';
 
 export async function runCommandSync (command: string, opts?: ExecOptions): Promise<OsOutput> {
   return new Promise((resolve, reject) => {
@@ -51,7 +52,7 @@ export async function runCommandSync (command: string, opts?: ExecOptions): Prom
   });
 }
 
-export function runCommand (command: string, opts?: ExecOptions) {
+export function runCommand (command: string, opts?: ExecOptions): ChildProcess {
   try {
     if (opts) {
       opts.env = { ...process.env, ...(opts.env || {}) };
@@ -86,7 +87,7 @@ export function runCommand (command: string, opts?: ExecOptions) {
   }
 }
 
-export async function streamToFile (Body: any, filePath: string) {
+export async function streamToFile (Body: any, filePath: string): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     if (Body instanceof Readable) {
       Body.pipe(fs.createWriteStream(filePath))
@@ -96,7 +97,7 @@ export async function streamToFile (Body: any, filePath: string) {
   });
 }
 
-export async function streamToString (stream: Readable) {
+export async function streamToString (stream: Readable): Promise<string> {
   // lets have a ReadableStream as a stream variable
   const chunks = [];
 
@@ -107,7 +108,43 @@ export async function streamToString (stream: Readable) {
   return Buffer.concat(chunks).toString('utf-8');
 }
 
-export function replaceFromInDockerFile (filePath: string, tag: string) {
+export async function promisifyChildProcess (childProcess: ChildProcess): Promise<OsOutput> {
+  return new Promise((resolve, reject) => {
+    const standardOut: string[] = [];
+    const standardError: string[] = [];
+
+    childProcess.stdout?.on('data', (data) => {
+      standardOut.push(data);
+    });
+    
+    childProcess.stderr?.on('data', (data) => {
+      standardError.push(data);
+    });
+
+    childProcess.on('error', (error: Error) => {
+      reject(error);
+    });
+    
+    childProcess.on('exit', (code: number, signal: string) => {
+      if (code === 0) {
+        resolve({
+          stdout: standardOut.join('\n'),
+          stderr: standardError.join('\n'),
+          exitCode: code
+        });
+      } else {
+        reject({
+          stdout: standardOut.join('\n'),
+          stderr: standardError.join('\n'),
+          exitCode: code,
+          signal
+        });
+      }
+    });
+  });
+}
+
+export function replaceFromInDockerFile (filePath: string, tag?: string): void {
   try {
     const component = filePath.split('.').at(-1);
     const file = fs.readFileSync(filePath, 'utf-8');

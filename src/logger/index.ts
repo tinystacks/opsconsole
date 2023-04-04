@@ -1,5 +1,12 @@
-import pkg from 'colors';
-const { red, magenta, yellow, blue, gray, green } = pkg;
+import {
+  red,
+  magenta,
+  yellow,
+  blue,
+  gray,
+  green,
+  black
+} from 'colors';
 import { CliError } from '../errors';
 
 const logger = {
@@ -21,6 +28,10 @@ const logger = {
 
   log (message: string) {
     console.log(gray(message));
+  },
+  
+  stdout (message: string) {
+    console.log(black(message));
   },
 
   hint (message: string) {
