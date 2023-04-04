@@ -1,2 +1,1 @@
-- Added runtime widget installation
-- Process killing is more graceful
+- added pull flag to docker build commands on up so latest base image is pulled each time
