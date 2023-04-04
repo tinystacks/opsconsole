@@ -1,1 +1,1 @@
-- added pull flag to docker build commands on up so latest base image is pulled each time
+- Just bump version
