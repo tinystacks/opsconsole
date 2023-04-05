@@ -22,6 +22,8 @@ const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 const API_FILEPATH = '/tmp/Dockerfile.api';
 const UI_FILEPATH = '/tmp/Dockerfile.ui';
+let backendProcess: ChildProcess;
+let frontendProcess: ChildProcess;
 
 async function startNetwork () {
   try {
