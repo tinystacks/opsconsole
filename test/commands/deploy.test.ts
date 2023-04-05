@@ -88,7 +88,7 @@ describe('deploy', () => {
     expect(mockCreateOpsStack).toBeCalledWith(mockConfigYaml);
 
     expect(mockLoggerSuccess).toBeCalled();
-    expect(mockLoggerSuccess).toBeCalledWith('Successful started ops console deployment!');
+    expect(mockLoggerSuccess).toBeCalledWith('Successfully started ops console deployment!');
     
     expect(mockLoggerStdout).toBeCalled();
     expect(mockLoggerStdout).toBeCalledWith(JSON.stringify(mockOpsStack, null, 2));
@@ -120,7 +120,7 @@ describe('deploy', () => {
     expect(mockUpdateOpsStack).toBeCalledWith('console', mockConfigYaml);
 
     expect(mockLoggerSuccess).toBeCalled();
-    expect(mockLoggerSuccess).toBeCalledWith('Successful started ops console deployment!');
+    expect(mockLoggerSuccess).toBeCalledWith('Successfully started ops console deployment!');
     
     expect(mockLoggerStdout).toBeCalled();
     expect(mockLoggerStdout).toBeCalledWith(JSON.stringify(mockOpsStack, null, 2));

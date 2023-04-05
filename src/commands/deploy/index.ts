@@ -46,7 +46,7 @@ async function deploy (options: CommonOptions) {
     if (HttpError.isHttpError(response)) {
       throw response;
     }
-    logger.success('Successful started ops console deployment!');
+    logger.success('Successfully started ops console deployment!');
     logger.stdout(JSON.stringify(response, null, 2));
   } catch (error) {
     logger.error(`Error deploying ops console: ${error}`);
