@@ -1,3 +1,7 @@
+v0.0.6
+---
+Update to latest ops-stack-client
+ 
 v0.0.5
 ---
 Update docker build arg name to work in CI/CD environment
