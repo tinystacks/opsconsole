@@ -45,7 +45,6 @@ async function getDependencies (dir: string, file: string) {
     const parsedYaml = ConsoleParser.parse(configJson);
     const dependencies = new Set(Object.values(parsedYaml.dependencies));
     const dependenciesString = Array.from(dependencies).join(' ');
-    console.log(dependenciesString);
     return `"${dependenciesString}"`;
   } catch (e) {
     logger.error('Failed to install dependencies. Please verify that your yaml template is formatted correctly.');
