@@ -98,7 +98,7 @@ describe('deploy', () => {
     mockResolve.mockImplementationOnce((filePath: string) => filePath);
     mockReadFileSync.mockReturnValueOnce(mockConfigYaml);
     mockParseConfig.mockResolvedValueOnce(mockConfigJson);
-    mockGetOpsStack.mockResolvedValueOnce(mockOpsStack);
+    mockGetOpsStack.mockResolvedValueOnce([mockOpsStack]);
     mockUpdateOpsStack.mockResolvedValueOnce(mockOpsStack);
 
     await deploy({});
