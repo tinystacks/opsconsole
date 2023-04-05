@@ -1,3 +1,7 @@
+v0.0.5
+---
+Update docker build arg name to work in CI/CD environment
+ 
 v0.0.4
 ---
 - Just bump version
