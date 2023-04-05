@@ -13,8 +13,8 @@ import { getConsoleParser } from '../../utils/ops-core';
 
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
-const API_FILEPATH = 'Dockerfile.api';
-const UI_FILEPATH = 'Dockerfile.ui';
+const API_FILEPATH = './Dockerfile.api';
+const UI_FILEPATH = './Dockerfile.ui';
 
 async function startNetwork () {
   try {
