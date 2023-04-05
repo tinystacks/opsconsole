@@ -1,3 +1,7 @@
+v0.0.7
+---
+- pulls Dockerfiles to cwd instead of tmp
+ 
 v0.0.6
 ---
 Update to latest ops-stack-client
