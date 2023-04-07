@@ -19,7 +19,7 @@ const UI_FILEPATH = './Dockerfile.ui';
 async function startNetwork () {
   try {
     const commands = [
-      'docker network rm ops-console;',
+      'docker network rm ops-console || true;',
       'docker network create -d bridge ops-console;'
     ].join('\n');
     await promisifyChildProcess(runCommand(commands)).catch((e) => {
