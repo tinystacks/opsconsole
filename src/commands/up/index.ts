@@ -97,8 +97,8 @@ async function pullDockerFiles (tag: string) {
 async function startNetwork () {
   try {
     const commands = [
-      'docker network rm ops-console',
-      'docker network create -d bridge ops-console'
+      'docker network rm ops-console;',
+      'docker network create -d bridge ops-console;'
     ].join('\n');
     await runCommandSync(commands);
   } catch (e) {
