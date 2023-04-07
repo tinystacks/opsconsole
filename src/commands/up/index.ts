@@ -6,59 +6,72 @@ import { S3 } from '@aws-sdk/client-s3';
 import { ChildProcess } from 'child_process';
 import logger from '../../logger';
 import isNil from 'lodash.isnil';
-import { promisifyChildProcess, replaceFromInDockerFile, runCommand, streamToFile } from '../../utils/os';
+import { logAndThrow, replaceFromInDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
 import { ImageArchitecture, UpOptions } from '../../types';
 import { DEFAULT_CONFIG_FILENAME } from '../../constants';
 import { getConsoleParser } from '../../utils/ops-core';
+import { parseConfig, validateDependencies } from '../../utils/config';
+import { getOpen } from '../../utils/open/index';
 
 // User experience/README notes
 // note format for dependencies in yaml
-// need a way to fail early if packages don't exist
+// x need a way to fail early if packages don't exist
 // Note how long it may take for images to build
 // Flag not to rebuild image
 // note docker must be running
+// verify commands to see if they are windows compatible
+// add copy flag to mount directory with local packages
+// port flag
+// flag to choose whether to build or not
+// x .at only works on new version
+// Troubleshooting/Getting started
+// have docker desktop running on windows in README for priveleged
 
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
-const API_FILEPATH = '/tmp/Dockerfile.api';
-const UI_FILEPATH = '/tmp/Dockerfile.ui';
-let backendProcess: ChildProcess;
-let frontendProcess: ChildProcess;
+const API_FILEPATH = './Dockerfile.api';
+const UI_FILEPATH = './Dockerfile.ui';
 
-async function startNetwork () {
-  try {
-    const commands = [
-      'docker network rm ops-console',
-      'docker network create -d bridge ops-console'
-    ].join('\n');
-    await promisifyChildProcess(runCommand(commands));
-    // .catch((e) => {
-    //   const isChildProcessOutput: boolean = !Number.isNaN(e.exitCode) && !isNil(e.stdout) && !isNil(e.stderr);
-    //   if (isChildProcessOutput) {
-    //     if (e.signal) {
-    //       throw new Error(`Process was interrupted by signal ${e.signal}! Exiting with code ${e.exitCode}...`);
-    //     }
-    //     throw new Error(`Commands to start docker network failed with exit code ${e.exitCode}!\n\t stdout: ${e.stdout}\n\t stderr: ${e.stderr}`);
-    //   }
-    //   throw e;
-    // });
-  } catch (e) {
-    logger.error('Failed to launch ops console docker network!');
-    throw e;
+function validateArchitecture (arch: string) {
+  switch (arch) {
+    case 'x86':
+      return ImageArchitecture.x86;
+    case 'x64':
+      return ImageArchitecture.x86;
+    case 'ia32':
+      return ImageArchitecture.x86;
+    case 'arm':
+      return ImageArchitecture.ARM;
+    case 'arm64':
+      return ImageArchitecture.ARM;
+    default:
+      logAndThrow(`ops does not currently support ${arch}`);
   }
 }
-async function getDependencies (dir: string, file: string) {
+
+function validateConfigFilePath (configFile: string) {
+  const absolutePath = path.resolve(configFile || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
+  if (fs.existsSync(absolutePath)) {
+    return {
+      parentDirectory: path.dirname(absolutePath),
+      file: path.basename(absolutePath)
+    };
+  }
+  logAndThrow(`Specified config file ${absolutePath} does not exist.`);
+}
+
+async function getDependencies (file: string, parentDirectory: string) {
   try {
-    const configFile = fs.readFileSync(`${dir}/${file}`);
-    const configJson = (yaml.load(configFile.toString()) as any)?.Console as YamlConsole;
-    const ConsoleParser = await getConsoleParser();
-    const parsedYaml = ConsoleParser.parse(configJson);
-    const dependencies = new Set(Object.values(parsedYaml.dependencies));
-    const dependenciesString = Array.from(dependencies).join(' ');
+    logger.info('Validating dependencies...');
+    const parsedConfig = await parseConfig(file, parentDirectory);
+    const dependencies = new Set(Object.values(parsedConfig.dependencies));
+    const dependenciesArray = Array.from(dependencies);
+    await validateDependencies(dependenciesArray);
+    logger.success('Dependencies validated!');
+    const dependenciesString = dependenciesArray.join(' ');
     return `"${dependenciesString}"`;
   } catch (e) {
-    logger.error('Failed to install dependencies. Please verify that your yaml template is formatted correctly.');
-    throw e;
+    logAndThrow('Failed to install dependencies. Please verify that your yaml template is formatted correctly.', e);
   }
 }
 
@@ -81,116 +94,102 @@ async function pullDockerFiles (tag: string) {
   replaceFromInDockerFile(UI_FILEPATH, tag);
 }
 
-function runBackend (dependencies: string, dir: string, file: string) {
+async function startNetwork () {
   try {
-    logger.info('Launching backend on 0.0.0.0:8000. This may take a moment.');
     const commands = [
-      `docker build --pull --build-arg DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api . || exit 1`,
-      'docker container stop ops-api || true',
-      'docker container rm ops-api || true',
-      `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api;`
-    ].join(';\n');
-    const childProcess = runCommand(commands);
-    childProcess.stdout.on('data', (data) => {
-      if (data.includes(BACKEND_SUCCESS_INDICATOR)) { 
-        logger.success('Ops console backend now running on http://0.0.0.0:8000');
-      }
-    });
-    return childProcess;
+      'docker network rm ops-console',
+      'docker network create -d bridge ops-console'
+    ].join('\n');
+    await runCommandSync(commands);
   } catch (e) {
-    logger.error(`Error launching ops console backend: ${e}`);
-    throw e;
+    logAndThrow('Failed to launch ops console docker network!', e);
   }
+}
+
+function runBackend (dependencies: string, file: string, dir: string) {
+  logger.info('Launching backend on 0.0.0.0:8000...');
+  const commands = [
+    `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api . || exit 1`,
+    'docker container stop ops-api || true',
+    'docker container rm ops-api || true',
+    `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api;`
+  ].join(';\n');
+  const childProcess = runCommand(commands);
+  childProcess.stdout.on('data', (data) => {
+    if (data.includes(BACKEND_SUCCESS_INDICATOR)) { 
+      logger.success('Ops console backend is now running on http://0.0.0.0:8000');
+    }
+  });
+  return childProcess;
 }
 
 function runFrontend (dependencies: string, open: any) {
-  try {
-    logger.info('Launching frontend on 0.0.0.0:3000. This may take a moment.');
-    const commands = [
-      `docker build --pull --build-arg DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend . || exit 1`,
-      'docker container stop ops-frontend || true',
-      'docker container rm ops-frontend || true',
-      'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend;'
-    ].join(';\n');
-    const childProcess = runCommand(commands);
-    childProcess.stdout.on('data', (data) => {
-      if (data.includes(FRONTEND_SUCCESS_INDICATOR )) {
-        logger.success('Ops console frontend now running on http://0.0.0.0:3000');
-        open.default('http://0.0.0.0:3000');
-      }
-    });
-    return childProcess;
-  } catch (e) {
-    logger.error(`Error launching ops console frontend: ${e}`);
-    throw e;
-  }
+  logger.info('Launching frontend on 0.0.0.0:3000...');
+  const commands = [
+    `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend . || exit 1`,
+    'docker container stop ops-frontend || true',
+    'docker container rm ops-frontend || true',
+    'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend;'
+  ].join(';\n');
+  const childProcess = runCommand(commands);
+  childProcess.stdout.on('data', (data) => {
+    if (data.includes(FRONTEND_SUCCESS_INDICATOR )) {
+      logger.success('Ops console frontend is now running on http://0.0.0.0:3000');
+      open.default('http://0.0.0.0:3000');
+    }
+  });
+  return childProcess;
 }
 
-function validateArchitecture (arch: string) {
-  switch (arch) {
-    case 'x86':
-      return ImageArchitecture.x86;
-    case 'x64':
-      return ImageArchitecture.x86;
-    case 'ia32':
-      return ImageArchitecture.x86;
-    case 'arm':
-      return ImageArchitecture.ARM;
-    case 'arm64':
-      return ImageArchitecture.ARM;
-    default:
-      throw new Error(`ops does not currently support ${arch}`);
-  }
+function cleanup () {
+  logger.info('Cleaning up...');
+  fs.unlink(API_FILEPATH, () => { return; });
+  fs.unlink(UI_FILEPATH, () => { return; });
 }
 
-function validateConfigFilePath (configFile: string) {
-  const absolutePath = path.resolve(configFile || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
-  if (fs.existsSync(absolutePath)) {
-    return {
-      dir: path.dirname(absolutePath),
-      file: path.basename(absolutePath)
-    };
-  }
-  throw new Error(`Specified config file ${absolutePath} does not exist.`);
-}
-
-// attaches cleanup hooks to frontend and backend in case of signal, error, or exit code
-function handleCleanup (backendProcess: ChildProcess, frontendProcess: ChildProcess) {
-  const signals = [ 'SIGINT', 'SIGQUIT', 'SIGTERM' ];
-  function cleanup () {
-    logger.info('Cleaning up...');
-    fs.unlink(API_FILEPATH, () => { return; });
-    fs.unlink(UI_FILEPATH, () => { return; });
-    runCommand('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
-    backendProcess.kill();
-    frontendProcess.kill();
-  }
-
+const signals = [ 'SIGINT', 'SIGQUIT', 'SIGTERM' ];
+function setParentCleanupHandler () {
   signals.forEach((signal) => {
     process.on(signal, cleanup);
   });
+}
 
-  backendProcess.on('error', () => {
+function setProcessCleanupHandler (backendProcess: ChildProcess, frontendProcess: ChildProcess) {
+  function cleanupProcesses () {
+    runCommand('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    backendProcess?.kill();
+    frontendProcess?.kill();
+  }
+
+  signals.forEach((signal) => {
+    process.on(signal, cleanupProcesses);
+  });
+  backendProcess?.on('error', () => {
     logger.error('Failed to launch ops console backend!');
     cleanup();
+    cleanupProcesses();
   });
-  frontendProcess.on('error', () => {
+  frontendProcess?.on('error', () => {
     logger.error('Failed to launch ops console frontend!');
     cleanup();
+    cleanupProcesses();
   });
-  backendProcess.on('exit', (code, signal) => {
-    // only checks for an exit that is not a result of a handled signal
-    if (!signals.includes(signal) && !isNil(code) && code !== 0) {
+  backendProcess?.on('exit', (code) => {
+    if (!isNil(code) && code !== 0) {
       logger.error(`Backend exited with code ${code}`);
       cleanup();
+      cleanupProcesses();
     }
   });
-  // frontendProcess.on('exit', (code, signal) => {
-  //   if (!signals.includes(signal) && !isNil(code) && code !== 0) {
-  //     logger.error(`Frontend exited with code ${code}`);
-  //     cleanup();
-  //   }
-  // });
+  /*
+  frontendProcess?.on('exit', (code, signal) => {
+    if (!signals.includes(signal) && !isNil(code) && code !== 0) {
+      logger.error(`Frontend exited with code ${code}`);
+      cleanup();
+      cleanupProcesses();
+    }
+  });
+  */
 }
 
 async function up (options: UpOptions) {
@@ -200,18 +199,21 @@ async function up (options: UpOptions) {
     verbose = false
   } = options;
   try {
+    setParentCleanupHandler();
     process.env.VERBOSE = verbose.toString();
-    const { dir, file } = validateConfigFilePath(configFile);
+    const { file, parentDirectory } = validateConfigFilePath(configFile);
     const tag = validateArchitecture(arch);
-    const dependencies = await getDependencies(dir, file);
+    const dependencies = await getDependencies(file, parentDirectory);
     await pullDockerFiles(tag);
     await startNetwork();
-    const open = await import('open');
-    const backendProcess = runBackend(dependencies, dir, file);
+    const open = await getOpen();
+    const backendProcess = runBackend(dependencies, file, parentDirectory);
     const frontendProcess = runFrontend(dependencies, open);
-    handleCleanup(backendProcess, frontendProcess);
+    setProcessCleanupHandler(backendProcess, frontendProcess);
+    logger.info('This may take a moment.');
   } catch (e) {
-    logger.error('ops-cli up failed. To debug, please run with the -V, --verbose flag');
+    const verboseHint = process.env.VERBOSE === 'true' ? '' : ' To debug, please run with the -V, --verbose flag';
+    logger.error(`ops-cli up failed!${verboseHint}`, e);
   }
 }
 

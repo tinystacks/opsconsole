@@ -1,6 +1,6 @@
 {
   "name": "@tinystacks/ops-cli",
-  "version": "0.0.2",
+  "version": "0.0.7",
   "description": "",
   "main": "dist/index.js",
   "bin": {
@@ -31,7 +31,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test-cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test-file": "NODE_OPTIONS=--experimental-vm-modules jest ./test/utils/os.test.ts",
-    "test-file-cov": "NODE_OPTIONS=--experimental-vm-modules jest ./testindex.test.ts --coverage",
+    "test-file-cov": "NODE_OPTIONS=--experimental-vm-modules jest ./test/commands/up.test.ts --coverage",
     "view-test-cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage || true && open coverage/lcov-report/index.html",
     "prepare": "husky install"
   },
@@ -64,7 +64,7 @@
     "@aws-sdk/client-s3": "^3.303.0",
     "@tinystacks/ops-core": "^0.0.3",
     "@tinystacks/ops-model": "^0.0.1",
-    "@tinystacks/ops-stack-client": "^1.0.2",
+    "@tinystacks/ops-stack-client": "^1.0.3",
     "colors": "^1.4.0",
     "commander": "^10.0.0",
     "http-errors": "^2.0.0",

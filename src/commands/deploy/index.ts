@@ -11,7 +11,8 @@ import { getCredentials, getClient } from '../../utils/ops-stack-api-utils';
 async function checkIfConsoleExists (consoleName: string, opsStackClient: OpsStackApiClient): Promise<boolean | never> {
   try {
 
-    const consoleStack = await opsStackClient.allocate.getOpsStack(consoleName);
+    const consoleStacks = await opsStackClient.allocate.getOpsStack(consoleName);
+    const [consoleStack] = consoleStacks || [];
     if (consoleStack && consoleStack.name === consoleName) return true;
     throw consoleStack;
   } catch (e) {

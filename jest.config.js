@@ -18,10 +18,12 @@ module.exports = {
   transform: {},
   coveragePathIgnorePatterns: [
     "src/index.ts",
+    "src/constants.ts",
     "src/commands/index.ts",
     "src/types/index.ts",
     "src/utils/ops-stack-api-utils/get-client.ts",
     "src/utils/ops-stack-api-utils/index.ts",
-    "src/utils/ops-core/index.ts"
+    "src/utils/ops-core/index.ts",
+    "src/utils/open/index.ts"
   ]
 };

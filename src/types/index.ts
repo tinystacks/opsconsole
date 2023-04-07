@@ -5,7 +5,7 @@ export enum ImageArchitecture {
 
 export interface CommonOptions {
   configFile?: string;
-  verbose: boolean;
+  verbose?: boolean;
 }
 
 export interface UpOptions extends CommonOptions {
