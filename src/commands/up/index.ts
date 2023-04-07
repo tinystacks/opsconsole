@@ -76,7 +76,7 @@ function runBackend (dependencies: string, dir: string, file: string) {
   try {
     logger.info('Launching backend on localhost:8000');
     const commands = [
-      `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api . || exit 1`,
+      `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api .`,
       `docker container stop ops-api || ${EXIT_0}`,
       `docker container rm ops-api || ${EXIT_0}`,
       `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api;`
@@ -98,7 +98,7 @@ function runFrontend (dependencies: string) {
   try {
     logger.info('Launching frontend on localhost:3000');
     const commands = [
-      `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend . || exit 1`,
+      `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend .`,
       `docker container stop ops-frontend ${EXIT_0}`,
       `docker container rm ops-frontend || ${EXIT_0}`,
       'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend;'
