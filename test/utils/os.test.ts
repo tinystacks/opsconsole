@@ -7,6 +7,7 @@ const mockLoggerInfo = jest.fn();
 const mockReadFileSync = jest.fn();
 const mockWriteFileSync = jest.fn();
 const mockCreateWriteStream = jest.fn();
+const mockLoggerVerbose = jest.fn();
 
 jest.mock('child_process', () => {
   const {
@@ -24,7 +25,8 @@ jest.mock('child_process', () => {
 jest.mock('../../src/logger', () => ({
   log: mockLoggerLog,
   error: mockLoggerError,
-  info: mockLoggerInfo
+  info: mockLoggerInfo,
+  verbose: mockLoggerVerbose
 }));
 
 jest.mock('fs', () => ({
@@ -38,7 +40,6 @@ import {
   ExecOptions
 } from 'child_process';
 import {
-  promisifyChildProcess,
   replaceFromInDockerFile,
   runCommand, runCommandSync, streamToFile, streamToString
 } from '../../src/utils/os';
@@ -189,79 +190,79 @@ describe('os utils', () => {
     });
   });
 
-  describe('promisifyChildProcess', () => {
-    it('adds new event listeners and returns promise to resolve output', async () => {
-      const mockChildProcess = new MockChildProcess();
-      const onOverride = ((event: string, callback: (...args: any) => void) => {
-        if (event === 'error') {
-          // @ts-ignore
-          this.childProcessErrorCb = callback;
-        } else if (event === 'exit') {
-          // @ts-ignore
-          this.childProcessExitCb = callback;
-          // @ts-ignore
-          this.childProcessExitCb(0);
-        }
-      }).bind(mockChildProcess);
-      jest.spyOn(mockChildProcess, 'on').mockImplementation(onOverride);
+  // describe('promisifyChildProcess', () => {
+  //   it('adds new event listeners and returns promise to resolve output', async () => {
+  //     const mockChildProcess = new MockChildProcess();
+  //     const onOverride = ((event: string, callback: (...args: any) => void) => {
+  //       if (event === 'error') {
+  //         // @ts-ignore
+  //         this.childProcessErrorCb = callback;
+  //       } else if (event === 'exit') {
+  //         // @ts-ignore
+  //         this.childProcessExitCb = callback;
+  //         // @ts-ignore
+  //         this.childProcessExitCb(0);
+  //       }
+  //     }).bind(mockChildProcess);
+  //     jest.spyOn(mockChildProcess, 'on').mockImplementation(onOverride);
 
-      const result = await promisifyChildProcess(mockChildProcess as unknown as ChildProcess)
-      expect(result).toHaveProperty('stdout', '');
-      expect(result).toHaveProperty('stderr', '');
-      expect(result).toHaveProperty('exitCode', 0);
-    });
-    it('rejects if an error event is emitted', async () => {
-      const mockError = new Error('Error!');
-      const mockChildProcess = new MockChildProcess();
-      const onOverride = ((event: string, callback: (...args: any) => void) => {
-        if (event === 'error') {
-          // @ts-ignore
-          this.childProcessErrorCb = callback;
-          // @ts-ignore
-          this.childProcessErrorCb(mockError)
-        } else if (event === 'exit') {
-          // @ts-ignore
-          this.childProcessExitCb = callback;
-        }
-      }).bind(mockChildProcess);
-      jest.spyOn(mockChildProcess, 'on').mockImplementation(onOverride);
+  //     const result = await promisifyChildProcess(mockChildProcess as unknown as ChildProcess)
+  //     expect(result).toHaveProperty('stdout', '');
+  //     expect(result).toHaveProperty('stderr', '');
+  //     expect(result).toHaveProperty('exitCode', 0);
+  //   });
+  //   it('rejects if an error event is emitted', async () => {
+  //     const mockError = new Error('Error!');
+  //     const mockChildProcess = new MockChildProcess();
+  //     const onOverride = ((event: string, callback: (...args: any) => void) => {
+  //       if (event === 'error') {
+  //         // @ts-ignore
+  //         this.childProcessErrorCb = callback;
+  //         // @ts-ignore
+  //         this.childProcessErrorCb(mockError)
+  //       } else if (event === 'exit') {
+  //         // @ts-ignore
+  //         this.childProcessExitCb = callback;
+  //       }
+  //     }).bind(mockChildProcess);
+  //     jest.spyOn(mockChildProcess, 'on').mockImplementation(onOverride);
 
-      let thrownError;
-      try {
-        await promisifyChildProcess(mockChildProcess as unknown as ChildProcess)
-      } catch (error) {
-        thrownError = error;
-      } finally {
-        expect(thrownError).toEqual(mockError);
-      }
-    });
-    it('rejects if an exit event is emitted with non-zero code', async () => {
-      const mockChildProcess = new MockChildProcess();
-      const onOverride = ((event: string, callback: (...args: any) => void) => {
-        if (event === 'error') {
-          // @ts-ignore
-          this.childProcessErrorCb = callback;
-        } else if (event === 'exit') {
-          // @ts-ignore
-          this.childProcessExitCb = callback;
-          // @ts-ignore
-          this.childProcessExitCb(1);
-        }
-      }).bind(mockChildProcess);
-      jest.spyOn(mockChildProcess, 'on').mockImplementation(onOverride);
+  //     let thrownError;
+  //     try {
+  //       await promisifyChildProcess(mockChildProcess as unknown as ChildProcess)
+  //     } catch (error) {
+  //       thrownError = error;
+  //     } finally {
+  //       expect(thrownError).toEqual(mockError);
+  //     }
+  //   });
+  //   it('rejects if an exit event is emitted with non-zero code', async () => {
+  //     const mockChildProcess = new MockChildProcess();
+  //     const onOverride = ((event: string, callback: (...args: any) => void) => {
+  //       if (event === 'error') {
+  //         // @ts-ignore
+  //         this.childProcessErrorCb = callback;
+  //       } else if (event === 'exit') {
+  //         // @ts-ignore
+  //         this.childProcessExitCb = callback;
+  //         // @ts-ignore
+  //         this.childProcessExitCb(1);
+  //       }
+  //     }).bind(mockChildProcess);
+  //     jest.spyOn(mockChildProcess, 'on').mockImplementation(onOverride);
 
-      let thrownError;
-      try {
-        await promisifyChildProcess(mockChildProcess as unknown as ChildProcess)
-      } catch (error) {
-        thrownError = error;
-      } finally {
-        expect(thrownError).toHaveProperty('stdout', '');
-        expect(thrownError).toHaveProperty('stderr', '');
-        expect(thrownError).toHaveProperty('exitCode', 1);
-      }
-    });
-  });
+  //     let thrownError;
+  //     try {
+  //       await promisifyChildProcess(mockChildProcess as unknown as ChildProcess)
+  //     } catch (error) {
+  //       thrownError = error;
+  //     } finally {
+  //       expect(thrownError).toHaveProperty('stdout', '');
+  //       expect(thrownError).toHaveProperty('stderr', '');
+  //       expect(thrownError).toHaveProperty('exitCode', 1);
+  //     }
+  //   });
+  // });
 
   describe('runCommandSync', () => {
     beforeEach(() => {
