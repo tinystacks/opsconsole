@@ -1,7 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import yaml from 'js-yaml';
-import { YamlConsole } from '@tinystacks/ops-model';
 import { S3 } from '@aws-sdk/client-s3';
 import { ChildProcess } from 'child_process';
 import logger from '../../logger';
@@ -9,7 +7,6 @@ import isNil from 'lodash.isnil';
 import { logAndThrow, replaceFromInDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
 import { ImageArchitecture, UpOptions } from '../../types';
 import { DEFAULT_CONFIG_FILENAME } from '../../constants';
-import { getConsoleParser } from '../../utils/ops-core';
 import { parseConfig, validateDependencies } from '../../utils/config';
 import { getOpen } from '../../utils/open/index';
 
@@ -31,6 +28,7 @@ const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 const API_FILEPATH = './Dockerfile.api';
 const UI_FILEPATH = './Dockerfile.ui';
+const EXIT_0 = process.platform === 'win32' ? 'exit 0' : 'true';
 
 function validateArchitecture (arch: string) {
   switch (arch) {
@@ -97,7 +95,7 @@ async function pullDockerFiles (tag: string) {
 async function startNetwork () {
   try {
     const commands = [
-      'docker network rm ops-console;',
+      `docker network rm ops-console || ${EXIT_0};`,
       'docker network create -d bridge ops-console;'
     ].join('\n');
     await runCommandSync(commands);
@@ -109,7 +107,7 @@ async function startNetwork () {
 function runBackend (dependencies: string, file: string, dir: string) {
   logger.info('Launching backend on 0.0.0.0:8000...');
   const commands = [
-    `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api . || exit 1`,
+    `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api .`,
     'docker container stop ops-api || true',
     'docker container rm ops-api || true',
     `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api;`
@@ -126,7 +124,7 @@ function runBackend (dependencies: string, file: string, dir: string) {
 function runFrontend (dependencies: string, open: any) {
   logger.info('Launching frontend on 0.0.0.0:3000...');
   const commands = [
-    `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend . || exit 1`,
+    `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend .`,
     'docker container stop ops-frontend || true',
     'docker container rm ops-frontend || true',
     'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend;'
@@ -156,7 +154,7 @@ function setParentCleanupHandler () {
 
 function setProcessCleanupHandler (backendProcess: ChildProcess, frontendProcess: ChildProcess) {
   function cleanupProcesses () {
-    runCommand('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    runCommand(`docker stop ops-frontend ops-api || ${EXIT_0}; docker network rm ops-console || ${EXIT_0}`);
     backendProcess?.kill();
     frontendProcess?.kill();
   }

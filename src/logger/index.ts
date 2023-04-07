@@ -62,7 +62,7 @@ const logger = {
       this.error('An unexpected error occurred!');
       console.error(error);
     }
-  },
+  }
 
   // execSignalError (message: string, e: any) {
   //   if (!(e instanceof ExecSignalError)) {

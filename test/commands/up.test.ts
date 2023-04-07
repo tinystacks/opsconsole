@@ -83,6 +83,12 @@ const mockOpenDefault = {
   default: mockOpen
 }
 
+jest.mock('process', () => {
+  const process = jest.requireActual('process');
+  process.platform = 'darwin';
+  return process;
+});
+
 import { up } from '../../src/commands/up';
 import { DEFAULT_CONFIG_FILENAME } from '../../src/constants';
 import { ImageArchitecture } from '../../src/types';

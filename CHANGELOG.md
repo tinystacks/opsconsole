@@ -1,3 +1,7 @@
+v0.0.9
+---
+- added graceful failure to docker network rm if network does not exist
+ 
 v0.0.8
 ---
 - modified docker network commands to be windows compatible
