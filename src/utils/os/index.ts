@@ -30,7 +30,7 @@ export function runCommand (command: string, opts?: ExecOptions): ChildProcess {
   });
 
   childProcess.on('exit', (code: number, signal: string) => {
-    if (!isNil(code) && code !== 0) logger.verbose(`The folowing command(s) exited with code: ${code}\n${command}\n`);
+    if (!isNil(code) && code !== 0) logger.verbose(`The following command(s) exited with code: ${code}\n${command}`);
     if (signal) logger.verbose(`Exited due to signal: ${signal}`);
   });
 

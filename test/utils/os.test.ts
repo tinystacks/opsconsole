@@ -82,9 +82,11 @@ describe('os utils', () => {
       childProcess.childProcessExitCb(0);
       await resultPromise;
 
-      expect(mockLoggerLog).toBeCalled();
-      expect(mockLoggerLog).toBeCalledTimes(1);
-      expect(mockLoggerLog).toBeCalledWith('mock command');
+      expect(mockLoggerVerbose).toBeCalled();
+      expect(mockLoggerVerbose).toBeCalledTimes(3);
+      expect(mockLoggerVerbose).toBeCalledWith('mock command');
+      expect(mockLoggerVerbose).toBeCalledWith('data');
+      expect(mockLoggerVerbose).toBeCalledWith('warning');
 
       expect(mockExec).toBeCalled();
       expect(mockExec).toBeCalledTimes(1);
@@ -94,83 +96,38 @@ describe('os utils', () => {
       );
       expect(mockExec.mock.calls[0][1].env).toHaveProperty('MOCK_VAR', 'mock-var');
       expect(mockExec.mock.calls[0][1].env).toHaveProperty('TEST_VAR', 'test-var');
-
-      expect(global.console.error).toBeCalled();
-      expect(global.console.error).toBeCalledTimes(1);
-      expect(global.console.error).toBeCalledWith('warning');
-      
-      expect(global.console.log).toBeCalled();
-      expect(global.console.log).toBeCalledTimes(1);
-      expect(global.console.log).toBeCalledWith('data');
     });
-    it('rejects on error from child process', async () => {
+    it('logs on error from child process', async () => {
       const mockError = { code: 1, name: 'ExecException', message: '' };
 
-      let thrownError;
-      try {
-        const resultPromise = runCommand('mock command');
-        const childProcess = childProcessStub;
-        childProcess.childProcessErrorCb(mockError);
-        childProcess.childProcessExitCb(0);
-        await resultPromise;
-      } catch (error) {
-        thrownError = error;
-      } finally {
-        expect(mockLoggerLog).toBeCalled();
-        expect(mockLoggerLog).toBeCalledTimes(1);
-        expect(mockLoggerLog).toBeCalledWith('mock command');
+      runCommand('mock command');
+      const childProcess = childProcessStub;
+      childProcess.childProcessErrorCb(mockError);
+      childProcess.childProcessExitCb(0);
 
-        expect(mockExec).toBeCalled();
-        expect(mockExec).toBeCalledTimes(1);
-        expect(mockExec).toBeCalledWith('mock command', undefined);
-
-        expect(mockLoggerError).toBeCalled();
-        expect(mockLoggerError).toBeCalledWith('Failed to execute command "mock command"');
-
-        expect(thrownError).toBeDefined();
-        expect(thrownError).toEqual(mockError);
-      }
-    });
-    it('notifies of signal during exit', async () => {
-      const resultPromise = runCommand('mock command');
-      const childProcess = childProcessStub;  
-      childProcess.childProcessExitCb(130, 'SIGINT');
-      await resultPromise;
-
-      expect(mockLoggerLog).toBeCalled();
-      expect(mockLoggerLog).toBeCalledTimes(1);
-      expect(mockLoggerLog).toBeCalledWith('mock command');
+      expect(mockLoggerVerbose).toBeCalled();
+      expect(mockLoggerVerbose).toBeCalledTimes(2);
+      expect(mockLoggerVerbose).toBeCalledWith('mock command');
+      expect(mockLoggerVerbose).toBeCalledWith('Failed to execute command:\nmock command\nError: ');
 
       expect(mockExec).toBeCalled();
       expect(mockExec).toBeCalledTimes(1);
       expect(mockExec).toBeCalledWith('mock command', undefined);
-
-      expect(mockLoggerInfo).toBeCalled();
-      expect(mockLoggerInfo).toBeCalledTimes(1);
-      expect(mockLoggerInfo).toBeCalledWith('Exited due to signal: SIGINT');
     });
-    it('rejects on error from main process', async () => {
-      const mockError = new Error('Error!');
-      mockLoggerLog.mockImplementationOnce(() => { throw mockError; } );
+    it('notifies of signal during exit', async () => {
+      runCommand('mock command');
+      const childProcess = childProcessStub;  
+      childProcess.childProcessExitCb(130, 'SIGINT');
 
-      let thrownError;
-      try {
-        await runCommand('mock command');
-      } catch (error) {
-        thrownError = error;
-      } finally {
-        expect(mockLoggerLog).toBeCalled();
-        expect(mockLoggerLog).toBeCalledTimes(1);
-        expect(mockLoggerLog).toBeCalledWith('mock command');
+      expect(mockLoggerVerbose).toBeCalled();
+      expect(mockLoggerVerbose).toBeCalledTimes(3);
+      expect(mockLoggerVerbose).toBeCalledWith('mock command');
+      expect(mockLoggerVerbose).toBeCalledWith('The following command(s) exited with code: 130\nmock command')
+      expect(mockLoggerVerbose).toBeCalledWith('Exited due to signal: SIGINT');
 
-        expect(mockExec).not.toBeCalled();
-
-        expect(mockLoggerError).toBeCalled();
-        expect(mockLoggerError).toBeCalledWith('Failed to execute command "mock command"');
-
-        expect(thrownError).toBeDefined();
-        expect(thrownError).toEqual(mockError);
-      }
+      expect(mockExec).toBeCalled();
+      expect(mockExec).toBeCalledTimes(1);
+      expect(mockExec).toBeCalledWith('mock command', undefined);
     });
   });
 
@@ -271,7 +228,27 @@ describe('os utils', () => {
       jest.spyOn(global.process.stdin, 'pipe').mockImplementation(mockPipe);
       mockExec.mockImplementation(execStub);
     });
+    // it('adds new event listeners and returns promise to resolve output', async () => {
+    //   const mockChildProcess = new MockChildProcess();
+    //   const onOverride = ((event: string, callback: (...args: any) => void) => {
+    //     if (event === 'error') {
+    //       // @ts-ignore
+    //       this.childProcessErrorCb = callback;
+    //     } else if (event === 'exit') {
+    //       // @ts-ignore
+    //       this.childProcessExitCb = callback;
+    //       // @ts-ignore
+    //       this.childProcessExitCb(0);
+    //     }
+    //   }).bind(mockChildProcess);
+    //   jest.spyOn(mockChildProcess, 'on').mockImplementation(onOverride);
 
+
+    //   const result = await runCommandSync('mockRunCommand');
+    //   expect(result).toHaveProperty('stdout', '');
+    //   expect(result).toHaveProperty('stderr', '');
+    //   expect(result).toHaveProperty('exitCode', 0);
+    // });
     it('combines env vars from options with env vars from process', async () => {
       const resultPromise = runCommandSync('mock command', {
         env: {
@@ -284,9 +261,9 @@ describe('os utils', () => {
       childProcess.childProcessExitCb(0);
       const response = await resultPromise;
 
-      expect(mockLoggerLog).toBeCalled();
-      expect(mockLoggerLog).toBeCalledTimes(1);
-      expect(mockLoggerLog).toBeCalledWith('mock command');
+      expect(mockLoggerVerbose).toBeCalled();
+      expect(mockLoggerVerbose).toBeCalledTimes(1);
+      expect(mockLoggerVerbose).toBeCalledWith('mock command');
 
       expect(mockExec).toBeCalled();
       expect(mockExec).toBeCalledTimes(1);
@@ -316,9 +293,9 @@ describe('os utils', () => {
       } catch (error) {
         thrownError = error;
       } finally {
-        expect(mockLoggerLog).toBeCalled();
-        expect(mockLoggerLog).toBeCalledTimes(1);
-        expect(mockLoggerLog).toBeCalledWith('mock command');
+        expect(mockLoggerVerbose).toBeCalled();
+        expect(mockLoggerVerbose).toBeCalledTimes(1);
+        expect(mockLoggerVerbose).toBeCalledWith('mock command');
 
         expect(mockExec).toBeCalled();
         expect(mockExec).toBeCalledTimes(1);
