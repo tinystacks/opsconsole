@@ -1,1 +1,1 @@
-
+- modified docker networks commands to be windows compatible
