@@ -1,3 +1,7 @@
+v0.0.8
+---
+- modified docker network commands to be windows compatible
+ 
 v0.0.7
 ---
 - pulls Dockerfiles to cwd instead of tmp
