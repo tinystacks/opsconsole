@@ -40,10 +40,12 @@ import {
   ExecOptions
 } from 'child_process';
 import {
+  logAndThrow,
   replaceFromInDockerFile,
   runCommand, runCommandSync, streamToFile, streamToString
 } from '../../src/utils/os';
 import { Readable } from 'stream';
+import { ExecSignalError } from '../../src/errors';
 
 let childProcessStub: MockChildProcess;
 function execStub (_command: string, _opts: ExecOptions) {
@@ -228,27 +230,6 @@ describe('os utils', () => {
       jest.spyOn(global.process.stdin, 'pipe').mockImplementation(mockPipe);
       mockExec.mockImplementation(execStub);
     });
-    // it('adds new event listeners and returns promise to resolve output', async () => {
-    //   const mockChildProcess = new MockChildProcess();
-    //   const onOverride = ((event: string, callback: (...args: any) => void) => {
-    //     if (event === 'error') {
-    //       // @ts-ignore
-    //       this.childProcessErrorCb = callback;
-    //     } else if (event === 'exit') {
-    //       // @ts-ignore
-    //       this.childProcessExitCb = callback;
-    //       // @ts-ignore
-    //       this.childProcessExitCb(0);
-    //     }
-    //   }).bind(mockChildProcess);
-    //   jest.spyOn(mockChildProcess, 'on').mockImplementation(onOverride);
-
-
-    //   const result = await runCommandSync('mockRunCommand');
-    //   expect(result).toHaveProperty('stdout', '');
-    //   expect(result).toHaveProperty('stderr', '');
-    //   expect(result).toHaveProperty('exitCode', 0);
-    // });
     it('combines env vars from options with env vars from process', async () => {
       const resultPromise = runCommandSync('mock command', {
         env: {
@@ -301,55 +282,53 @@ describe('os utils', () => {
         expect(mockExec).toBeCalledTimes(1);
         expect(mockExec).toBeCalledWith('mock command', undefined);
 
-        expect(mockLoggerError).toBeCalled();
-        expect(mockLoggerError).toBeCalledWith('Failed to execute command "mock command"');
+        expect(thrownError).toBeDefined();
+        expect(thrownError).toEqual(mockError);
+      }
+    });
+    it('rejects on signal during exit', async () => {
+      const mockError = new ExecSignalError('SIGINT');
+
+      let thrownError;
+      try {
+        const resultPromise = runCommandSync('mock command');
+        const childProcess = childProcessStub;
+        childProcess.childProcessExitCb(130, 'SIGINT');
+        await resultPromise;
+      } catch (error) {
+        thrownError = error;
+      } finally {
+        expect(mockLoggerVerbose).toBeCalled();
+        expect(mockLoggerVerbose).toBeCalledTimes(1);
+        expect(mockLoggerVerbose).toBeCalledWith('mock command');
+
+        expect(mockExec).toBeCalled();
+        expect(mockExec).toBeCalledTimes(1);
+        expect(mockExec).toBeCalledWith('mock command', undefined);
 
         expect(thrownError).toBeDefined();
         expect(thrownError).toEqual(mockError);
       }
     });
-    it('notifies of signal during exit', async () => {
-      const resultPromise = runCommandSync('mock command');
-      const childProcess = childProcessStub;  
-      childProcess.childProcessExitCb(130, 'SIGINT');
-      const response = await resultPromise;
-
-      expect(mockLoggerLog).toBeCalled();
-      expect(mockLoggerLog).toBeCalledTimes(1);
-      expect(mockLoggerLog).toBeCalledWith('mock command');
-
-      expect(mockExec).toBeCalled();
-      expect(mockExec).toBeCalledTimes(1);
-      expect(mockExec).toBeCalledWith('mock command', undefined);
-
-      expect(mockLoggerInfo).toBeCalled();
-      expect(mockLoggerInfo).toBeCalledTimes(1);
-      expect(mockLoggerInfo).toBeCalledWith('Exited due to signal: SIGINT');
-
-      expect(response).toEqual({
-        stdout: '',
-        stderr: '',
-        exitCode: 130
-      });
-    });
-    it('rejects on error from main process', async () => {
-      const mockError = new Error('Error!');
-      mockLoggerLog.mockImplementationOnce(() => { throw mockError; } );
+    it('rejects on nonzero exit from child process', async () => {
+      const mockError = { stdout: '', stderr: '', exitCode: 1 };
 
       let thrownError;
       try {
-        await runCommandSync('mock command');
+        const resultPromise = runCommandSync('mock command');
+        const childProcess = childProcessStub;
+        childProcess.childProcessExitCb(1);
+        await resultPromise;
       } catch (error) {
         thrownError = error;
       } finally {
-        expect(mockLoggerLog).toBeCalled();
-        expect(mockLoggerLog).toBeCalledTimes(1);
-        expect(mockLoggerLog).toBeCalledWith('mock command');
+        expect(mockLoggerVerbose).toBeCalled();
+        expect(mockLoggerVerbose).toBeCalledTimes(1);
+        expect(mockLoggerVerbose).toBeCalledWith('mock command');
 
-        expect(mockExec).not.toBeCalled();
-
-        expect(mockLoggerError).toBeCalled();
-        expect(mockLoggerError).toBeCalledWith('Failed to execute command "mock command"');
+        expect(mockExec).toBeCalled();
+        expect(mockExec).toBeCalledTimes(1);
+        expect(mockExec).toBeCalledWith('mock command', undefined);
 
         expect(thrownError).toBeDefined();
         expect(thrownError).toEqual(mockError);
@@ -529,6 +508,37 @@ describe('os utils', () => {
         expect(readable.on).toBeCalledTimes(2);
         expect(readable.on).toBeCalledWith('error', expect.any(Function));
         expect(readable.on).toBeCalledWith('close', expect.any(Function));
+
+        expect(thrownError).toEqual(mockError);
+      }
+    });
+  });
+
+  describe('logAndThrow', () => {
+    it('immediately throws ExecSignalError', () => {
+      const mockError = new ExecSignalError('SIGINT');
+      let thrownError;
+      try {
+        logAndThrow('Error!', mockError);
+      } catch (e) {
+        thrownError = e;
+      } finally {
+        expect(mockLoggerError).not.toBeCalled();
+
+        expect(thrownError).toEqual(mockError);
+      }
+    });
+    it('logs and throws error', () => {
+      const mockError = new Error('Error!')
+      let thrownError;
+      try {
+        logAndThrow('Error!', mockError);
+      } catch (e) {
+        thrownError = e;
+      } finally {
+        expect(mockLoggerError).toBeCalled();
+        expect(mockLoggerError).toBeCalledTimes(1);
+        expect(mockLoggerError).toBeCalledWith('Error!', mockError);
 
         expect(thrownError).toEqual(mockError);
       }
