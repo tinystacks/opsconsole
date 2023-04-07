@@ -15,11 +15,12 @@ const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 const API_FILEPATH = './Dockerfile.api';
 const UI_FILEPATH = './Dockerfile.ui';
+const EXIT_0 = process.platform === 'win32' ? 'exit 0' : 'true';
 
 async function startNetwork () {
   try {
     const commands = [
-      'docker network rm ops-console || true;',
+      `docker network rm ops-console || ${EXIT_0}`,
       'docker network create -d bridge ops-console;'
     ].join('\n');
     await promisifyChildProcess(runCommand(commands)).catch((e) => {
@@ -76,8 +77,8 @@ function runBackend (dependencies: string, dir: string, file: string) {
     logger.info('Launching backend on localhost:8000');
     const commands = [
       `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api . || exit 1`,
-      'docker container stop ops-api || true',
-      'docker container rm ops-api || true',
+      `docker container stop ops-api || ${EXIT_0}`,
+      `docker container rm ops-api || ${EXIT_0}`,
       `docker run --name ops-api -v $HOME/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api;`
     ].join(';\n');
     const childProcess = runCommand(commands);
@@ -98,8 +99,8 @@ function runFrontend (dependencies: string) {
     logger.info('Launching frontend on localhost:3000');
     const commands = [
       `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend . || exit 1`,
-      'docker container stop ops-frontend || true',
-      'docker container rm ops-frontend || true',
+      `docker container stop ops-frontend ${EXIT_0}`,
+      `docker container rm ops-frontend || ${EXIT_0}`,
       'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend;'
     ].join(';\n');
     const childProcess = runCommand(commands);
@@ -148,7 +149,7 @@ function handleExitSignalCleanup (backendProcess?: ChildProcess, frontendProcess
     fs.unlink(UI_FILEPATH, () => { return; });
     backendProcess?.kill();
     frontendProcess?.kill();
-    runCommand('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    runCommand(`docker stop ops-frontend ops-api || ${EXIT_0}; docker network rm ops-console || ${EXIT_0}`);
   }
   process.on('SIGINT', cleanup);
   process.on('SIGQUIT', cleanup);
