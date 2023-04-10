@@ -19,8 +19,8 @@ function signup (options: SignupOptions = {}) {
         openCommand = 'xdg-open';
         break;
     }
-    logger.info('Opening https://ops.tinystacks.com in your default browser...');
-    execSync(`${openCommand} https://ops.tinystacks.com`);
+    logger.info('Opening https://ops.tinystacks.com/sign-up in your default browser...');
+    execSync(`${openCommand} https://ops.tinystacks.com/sign-up`);
   } catch (e) {
     logger.error(`Error during signup: ${e}`);
   }
