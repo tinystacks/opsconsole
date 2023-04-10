@@ -27,10 +27,10 @@ describe('signup', () => {
     await signup({ os: 'darwin' });
 
     expect(mockExecSync).toBeCalled();
-    expect(mockExecSync).toBeCalledWith('open https://ops.tinystacks.com');
+    expect(mockExecSync).toBeCalledWith('open https://ops.tinystacks.com/sign-up');
 
     expect(mockLoggerInfo).toBeCalled();
-    expect(mockLoggerInfo).toBeCalledWith('Opening https://ops.tinystacks.com in your default browser...');
+    expect(mockLoggerInfo).toBeCalledWith('Opening https://ops.tinystacks.com/sign-up in your default browser...');
     
     expect(mockLoggerError).toBeCalled();
     expect(mockLoggerError).toBeCalledWith(`Error during signup: ${mockError}`);
@@ -39,18 +39,18 @@ describe('signup', () => {
     await signup({ os: 'win32' });
 
     expect(mockLoggerInfo).toBeCalled();
-    expect(mockLoggerInfo).toBeCalledWith('Opening https://ops.tinystacks.com in your default browser...');
+    expect(mockLoggerInfo).toBeCalledWith('Opening https://ops.tinystacks.com/sign-up in your default browser...');
 
     expect(mockExecSync).toBeCalled();
-    expect(mockExecSync).toBeCalledWith('start https://ops.tinystacks.com');
+    expect(mockExecSync).toBeCalledWith('start https://ops.tinystacks.com/sign-up');
   });
   it('opens url with xdg-open for linux', async () => {
     await signup({ os: 'linux' });
 
     expect(mockLoggerInfo).toBeCalled();
-    expect(mockLoggerInfo).toBeCalledWith('Opening https://ops.tinystacks.com in your default browser...');
+    expect(mockLoggerInfo).toBeCalledWith('Opening https://ops.tinystacks.com/sign-up in your default browser...');
 
     expect(mockExecSync).toBeCalled();
-    expect(mockExecSync).toBeCalledWith('xdg-open https://ops.tinystacks.com');
+    expect(mockExecSync).toBeCalledWith('xdg-open https://ops.tinystacks.com/sign-up');
   });
 });
