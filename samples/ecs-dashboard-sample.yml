@@ -273,6 +273,8 @@ Console:
     EcsProcesses:
       type: Cli
       displayName: List processes
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
       environmentVariables:
         AWS_REGION:
           $ref: '#/Console/widgets/EcsInfo'
@@ -288,6 +290,8 @@ Console:
     EcsDiskUtil:
       type: Cli
       displayName: Show Disk Utils
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
       environmentVariables:
         AWS_REGION:
           $ref: '#/Console/widgets/EcsInfo'
@@ -303,6 +307,8 @@ Console:
     EcsNetworkConnectivity:
       type: Cli
       displayName: Internet Connectivity
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
       environmentVariables:
         AWS_REGION:
           $ref: '#/Console/widgets/EcsInfo'
