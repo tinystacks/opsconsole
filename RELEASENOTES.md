@@ -1,1 +1,4 @@
-
+- added -V, --verbose flag to 'up' command
+- better cleanup handling on errors and exits
+- more succinct logging without verbose flag
+- README updates

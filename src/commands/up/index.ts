@@ -10,20 +10,6 @@ import { DEFAULT_CONFIG_FILENAME } from '../../constants';
 import { parseConfig, validateDependencies } from '../../utils/config';
 import { getOpen } from '../../utils/open/index';
 
-// User experience/README notes
-// note format for dependencies in yaml
-// x need a way to fail early if packages don't exist
-// Note how long it may take for images to build
-// Flag not to rebuild image
-// note docker must be running
-// verify commands to see if they are windows compatible
-// add copy flag to mount directory with local packages
-// port flag
-// flag to choose whether to build or not
-// x .at only works on new version
-// Troubleshooting/Getting started
-// have docker desktop running on windows in README for priveleged
-
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 const API_FILEPATH = './Dockerfile.api';

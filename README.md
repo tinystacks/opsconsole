@@ -56,6 +56,8 @@ ops-cli up;
 ## Pre-requisites
 To use the default installation, you need to have [docker installed](https://docs.docker.com/get-docker/).
 
+**Windows users** must have Docker Desktop running.
+
 Also please make sure that ports 8000 and 3000 are open, as those ports are used by the [API](https://github.com/tinystacks/ops-api) and [frontend](https://github.com/tinystacks/ops-frontend). If these ports are reserved, you can pull down the docker images for each of these packages and change the docker run to map ports separately.
 
 ## Install from the Global NPM registry
@@ -95,7 +97,7 @@ Shows usage and help information
 Creates a sample config file that includes a basic template. If you don't 
 
 ### ops-cli up
-Starts the ops console by pulling down the docker images for the ops api (public.ecr.aws/tinystacks/ops-api) and frontend (public.ecr.aws/tinystacks/ops-frontend). It creates a docker networking bridge called ops-console through which the containers communicate with each other.
+Starts the ops console by pulling down the docker images for the ops api (public.ecr.aws/tinystacks/ops-api) and frontend (public.ecr.aws/tinystacks/ops-frontend) and rebuilding them using dependencies included in your yaml file. This may take several minutes depending on your system's available resources. It creates a docker networking bridge called ops-console through which the containers communicate with each other.
 
 #### Options
 |Flag|Arguments|Description|
@@ -136,7 +138,7 @@ Sample dashboard configurations can be found in the `/samples` folder in this re
 ### Using widgets
 1. Define the widget in the `widgets` section of YAML
 2. Reference the widget in a dashboard
-3. Add the widget's source to the `dependencies` section of the YAML
+3. Add the widget's source to the `dependencies` section of the YAML in the format `widget name: 'dependency package'`
 
 ### Using providers
 Providers provide data to widgets from an external provider.
