@@ -1,3 +1,7 @@
+v0.0.10
+---
+Fix signup url. Add providers to cli widgets in samples.
+ 
 v0.0.9
 ---
 - added graceful failure to docker network rm if network does not exist
