@@ -1,3 +1,7 @@
+v0.0.12
+---
+- Adding sample dashboard for general AWS
+ 
 v0.0.11
 ---
 - README updates
