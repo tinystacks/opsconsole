@@ -104,6 +104,7 @@ Starts the ops console by pulling down the docker images for the ops api (public
 |----|---------|-----------|
 |-a, --arch|\<arch\>|  Specifies the architecture. Defaults to 'x86'. Options: 'x86', 'arm'
 |-c, --config-file|\<config-file\>|  Specifies a config file. See the `samples` folder in this repo for sample config files.
+|-V, --verbose||  Displays additional logs
 |-h, --help||             display help for this command
 
 ## Sample dashboards
