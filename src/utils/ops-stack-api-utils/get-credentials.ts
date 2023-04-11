@@ -11,9 +11,9 @@ function tryToReadFile (filePath: string): string {
     return fileContents;
   } catch (error: any) {
     if (error.code === 'ENOENT') {
-      logger.error(`Could not read file ${filePath}! File does not exist!`);
+      logger.verbose(`Could not read file ${filePath}! File does not exist!`);
     } else {
-      logger.error(`Failed to read file ${filePath}! ${error}`);
+      logger.verbose(`Failed to read file ${filePath}! ${error}`);
     }
     return undefined;
   }
