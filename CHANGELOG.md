@@ -1,3 +1,7 @@
+v0.0.11
+---
+- README updates
+ 
 v0.0.10
 ---
 Fix signup url. Add providers to cli widgets in samples.
