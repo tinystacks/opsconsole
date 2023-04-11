@@ -63,12 +63,6 @@ const logger = {
       console.error(error);
     }
   }
-
-  // execSignalError (message: string, e: any) {
-  //   if (!(e instanceof ExecSignalError)) {
-  //     this.error(message);
-  //   }
-  // }
 };
 
 
