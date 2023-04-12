@@ -40,7 +40,7 @@ import {
 import {
   promisifyChildProcess,
   replaceFromInDockerFile,
-  runCommand, runCommandSync, streamToFile, streamToString
+  runCommand, runCommandSync, sleep, streamToFile, streamToString
 } from '../../src/utils/os';
 import { Readable } from 'stream';
 
@@ -555,5 +555,13 @@ describe('os utils', () => {
         expect(thrownError).toEqual(mockError);
       }
     });
+  });
+  it('sleep', async () => {
+    jest.spyOn(global, 'setTimeout');
+
+    await sleep(1000);
+
+    expect(global.setTimeout).toBeCalled();
+    expect(global.setTimeout).toBeCalledWith(expect.any(Function), 1000);
   });
 });
