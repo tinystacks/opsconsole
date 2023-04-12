@@ -1,3 +1,7 @@
+v0.0.14
+---
+- Small patch removing forced failures on docker build to prevent failures on warnings
+ 
 v0.0.13
 ---
 - Add spinner on deploy command
