@@ -1,6 +1,6 @@
 {
   "name": "@tinystacks/ops-cli",
-  "version": "0.0.9",
+  "version": "0.0.14",
   "description": "",
   "main": "dist/index.js",
   "bin": {
@@ -71,6 +71,7 @@
     "js-yaml": "^4.1.0",
     "lodash.isnil": "^4.0.0",
     "open": "^9.1.0",
+    "ora": "^6.3.0",
     "prompts": "^2.4.2"
   }
 }

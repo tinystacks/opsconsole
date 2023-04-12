@@ -5,6 +5,7 @@ import { getConsoleParser } from '../ops-core';
 import { runCommandSync } from '../os';
 import logger from '../../logger';
 import { ExecSignalError } from '../../errors/exec-signal-error';
+import { Platform } from '../../constants';
 
 export async function parseConfig (file: string, parentDirectory?: string): Promise<Console> {
   const ConsoleParser = await getConsoleParser();
@@ -17,7 +18,7 @@ export async function parseConfig (file: string, parentDirectory?: string): Prom
 export async function validateDependencies (dependencies: string[]) {
   const dependenciesNotFound: string[] = [];
   for (const dependency of dependencies) {
-    await runCommandSync(`npm view ${dependency} 2>&1 /dev/null`).catch((e) => {
+    await runCommandSync(`npm view ${dependency} > ${Platform.Null} 2>&1`).catch((e) => {
       if (e instanceof ExecSignalError) {
         throw e;
       }

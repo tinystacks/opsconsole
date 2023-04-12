@@ -24,6 +24,7 @@ const mockGetOpen = jest.fn();
 const mockOpen = jest.fn();
 
 jest.mock('path', () => ({
+  ...jest.requireActual('path'),
   resolve: mockResolve,
   dirname: mockDirname,
   basename: mockBasename
@@ -200,100 +201,6 @@ describe('up', () => {
     expect(mockLoggerError).toBeCalledTimes(1);
     expect(mockLoggerError).toBeCalledWith('ops-cli up failed! To debug, please run with the -V, --verbose flag', logAndThrowError);
   });
-  // it('logs an error if ops-api fails to start', async () => {
-  //   mockResolve.mockReturnValue('./config.yml');
-  //   mockExistsSync.mockReturnValue(true);
-  //   mockDirname.mockReturnValue('./')
-  //   mockBasename.mockReturnValue('config.yml')
-  //   mockReadFileSync.mockReturnValue('');
-  //   mockLoad.mockReturnValue({});
-  //   mockParse.mockReturnValue({ dependencies: {} });
-  //   mockGetObject.mockResolvedValue({ Body: '' });
-  //   const mockNetworkChildProcess = new MockChildProcess();
-  //   mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
-  //   mockPromisifyChildProcess.mockResolvedValueOnce({
-  //     exitCode: 0,
-  //     stdout: '',
-  //     stderr: ''
-  //   });
-  //   const mockError = new Error('Error!');
-  //   mockRunCommand.mockImplementationOnce(() => { throw mockError; });
-  //   const mockOpsUiChildProcess = new MockChildProcess();
-  //   mockRunCommand.mockReturnValueOnce(mockOpsUiChildProcess);
-    
-  //   await up({});
-
-  //   expect(mockResolve).toBeCalled();
-  //   expect(mockResolve).toBeCalledWith(`${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
-
-  //   expect(mockExistsSync).toBeCalled();
-  //   expect(mockExistsSync).toBeCalledWith('./config.yml');
-    
-  //   expect(mockDirname).toBeCalled();
-  //   expect(mockDirname).toBeCalledWith('./config.yml');
-    
-  //   expect(mockBasename).toBeCalled();
-  //   expect(mockBasename).toBeCalledWith('./config.yml');
-
-  //   expect(mockRunCommand).toBeCalled();
-  //   expect(mockRunCommand).toBeCalledTimes(2);
-    
-  //   expect(mockPromisifyChildProcess).toBeCalled();
-  //   expect(mockPromisifyChildProcess).toBeCalledTimes(1);
-  //   expect(mockPromisifyChildProcess).toBeCalledWith(mockNetworkChildProcess);
-
-  //   expect(mockLoggerError).toBeCalled();
-  //   expect(mockLoggerError).toBeCalledTimes(2);
-  //   expect(mockLoggerError).toBeCalledWith(`Error launching ops console backend: ${mockError}`);
-  //   expect(mockLoggerError).toBeCalledWith(mockError.message);
-  // });
-  // it('logs an error if ops-ui fails to start', async () => {
-  //   mockResolve.mockReturnValue('./config.yml');
-  //   mockExistsSync.mockReturnValue(true);
-  //   mockDirname.mockReturnValue('./');
-  //   mockBasename.mockReturnValue('config.yml');
-  //   mockReadFileSync.mockReturnValue('');
-  //   mockLoad.mockReturnValue({});
-  //   mockParse.mockReturnValue({ dependencies: {} });
-  //   mockGetObject.mockResolvedValue({ Body: '' });
-  //   const mockNetworkChildProcess = new MockChildProcess();
-  //   mockRunCommand.mockReturnValueOnce(mockNetworkChildProcess);
-  //   mockPromisifyChildProcess.mockResolvedValueOnce({
-  //     exitCode: 0,
-  //     stdout: '',
-  //     stderr: ''
-  //   });
-  //   const mockOpsApiChildProcess = new MockChildProcess();
-  //   mockRunCommand.mockReturnValueOnce(mockOpsApiChildProcess);
-  //   const mockError = new Error('Error!');
-  //   mockRunCommand.mockImplementationOnce(() => { throw mockError; });
-    
-  //   await up({});
-
-  //   expect(mockResolve).toBeCalled();
-  //   expect(mockResolve).toBeCalledWith(`${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
-
-  //   expect(mockExistsSync).toBeCalled();
-  //   expect(mockExistsSync).toBeCalledWith('./config.yml');
-    
-  //   expect(mockDirname).toBeCalled();
-  //   expect(mockDirname).toBeCalledWith('./config.yml');
-    
-  //   expect(mockBasename).toBeCalled();
-  //   expect(mockBasename).toBeCalledWith('./config.yml');
-
-  //   expect(mockRunCommand).toBeCalled();
-  //   expect(mockRunCommand).toBeCalledTimes(3);
-    
-  //   expect(mockPromisifyChildProcess).toBeCalled();
-  //   expect(mockPromisifyChildProcess).toBeCalledTimes(1);
-  //   expect(mockPromisifyChildProcess).toBeCalledWith(mockNetworkChildProcess);
-
-  //   expect(mockLoggerError).toBeCalled();
-  //   expect(mockLoggerError).toBeCalledTimes(2);
-  //   expect(mockLoggerError).toBeCalledWith(`Error launching ops console frontend: ${mockError}`);
-  //   expect(mockLoggerError).toBeCalledWith(mockError.message);
-  // });
   it('validates inputs, starts network, and runs api and ui images', async () => {
     mockResolve.mockReturnValue('./config.yml');
     mockExistsSync.mockReturnValue(true);
@@ -376,8 +283,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'x86');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -413,8 +320,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'x86');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -450,8 +357,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'x86');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -487,8 +394,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'arm');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'arm');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -524,8 +431,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'arm');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'arm');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -610,8 +517,8 @@ describe('up', () => {
 
     expect(mockUnlink).toBeCalled();
     expect(mockUnlink).toBeCalledTimes(2);
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.api', expect.any(Function));
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.ui', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.api', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.ui', expect.any(Function));
 
     expect(mockOpsApiChildProcess.kill).toBeCalled();
     
@@ -619,7 +526,7 @@ describe('up', () => {
 
     expect(mockRunCommand).toBeCalled();
     expect(mockRunCommand).toBeCalledTimes(3);
-    expect(mockRunCommand.mock.calls[2][0]).toEqual('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    expect(mockRunCommand.mock.calls[2][0]).toEqual('docker stop ops-frontend ops-api || true && docker network rm ops-console || true');
   });
   it('error on backend', async () => {
     const mockEventOn = jest.fn();
@@ -659,8 +566,8 @@ describe('up', () => {
 
     expect(mockUnlink).toBeCalled();
     expect(mockUnlink).toBeCalledTimes(2);
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.api', expect.any(Function));
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.ui', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.api', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.ui', expect.any(Function));
 
     expect(mockOpsApiChildProcess.kill).toBeCalled();
     
@@ -668,7 +575,7 @@ describe('up', () => {
 
     expect(mockRunCommand).toBeCalled();
     expect(mockRunCommand).toBeCalledTimes(3);
-    expect(mockRunCommand.mock.calls[2][0]).toEqual('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    expect(mockRunCommand.mock.calls[2][0]).toEqual('docker stop ops-frontend ops-api || true && docker network rm ops-console || true');
   });
   it('error on frontend', async () => {
     const mockEventOn = jest.fn();
@@ -708,8 +615,8 @@ describe('up', () => {
 
     expect(mockUnlink).toBeCalled();
     expect(mockUnlink).toBeCalledTimes(2);
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.api', expect.any(Function));
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.ui', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.api', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.ui', expect.any(Function));
 
     expect(mockOpsApiChildProcess.kill).toBeCalled();
     
@@ -717,7 +624,7 @@ describe('up', () => {
 
     expect(mockRunCommand).toBeCalled();
     expect(mockRunCommand).toBeCalledTimes(3);
-    expect(mockRunCommand.mock.calls[2][0]).toEqual('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    expect(mockRunCommand.mock.calls[2][0]).toEqual('docker stop ops-frontend ops-api || true && docker network rm ops-console || true');
   });
   it('exit on backend', async () => {
     const mockEventOn = jest.fn();
@@ -755,8 +662,8 @@ describe('up', () => {
 
     expect(mockUnlink).toBeCalled();
     expect(mockUnlink).toBeCalledTimes(2);
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.api', expect.any(Function));
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.ui', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.api', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.ui', expect.any(Function));
 
     expect(mockOpsApiChildProcess.kill).toBeCalled();
     
@@ -764,6 +671,6 @@ describe('up', () => {
 
     expect(mockRunCommand).toBeCalled();
     expect(mockRunCommand).toBeCalledTimes(3);
-    expect(mockRunCommand.mock.calls[2][0]).toEqual('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    expect(mockRunCommand.mock.calls[2][0]).toEqual('docker stop ops-frontend ops-api || true && docker network rm ops-console || true');
   });
 });

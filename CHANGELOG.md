@@ -1,3 +1,24 @@
+v0.0.14
+---
+- Small patch removing forced failures on docker build to prevent failures on warnings
+ 
+v0.0.13
+---
+- Add spinner on deploy command
+- Change getCredential error handling to only log source error on verbose channel
+ 
+v0.0.12
+---
+- Adding sample dashboard for general AWS
+ 
+v0.0.11
+---
+- README updates
+ 
+v0.0.10
+---
+Fix signup url. Add providers to cli widgets in samples.
+ 
 v0.0.9
 ---
 - added graceful failure to docker network rm if network does not exist

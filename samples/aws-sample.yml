@@ -1,0 +1,135 @@
+Console:
+  name: console
+  providers:
+    AwsLocalProvider:
+      id: AwsLocalProvider
+      type: AwsCredentialsProvider
+      credentials:
+        profileName: default
+  dashboards:
+    LayoutDashboard:
+      route: main
+      widgets:
+        - $ref: '#/Console/widgets/SmallMarkdown'
+        - $ref: '#/Console/widgets/Metrics'
+        - $ref: '#/Console/widgets/Logs'
+        - $ref: '#/Console/widgets/BillingCommands'
+      id: LayoutDashboard
+  widgets:
+    SmallMarkdown:
+      id: SmallMarkdown
+      type: Markdown
+      displayName: Small Markdown Window
+      markdown: |
+        ##### This is fully supported markdown
+        ``` You can even drop in some code if you want ```
+      providers: []
+      children: []
+    BillingCommands:
+      id: BillingCommands
+      type: Tabs
+      displayName: Billing CLI Commands
+      tabNames:
+        - Current Month Bill
+        - List EC2 Instances
+      providers: []
+      children:
+        - $ref: '#/Console/widgets/CurrentMonthBill'
+        - $ref: '#/Console/widgets/EC2Instances'
+    CurrentMonthBill:
+      id: CurrentMonthBill
+      type: Cli
+      displayName: Current Month Bill
+      command: >
+        aws ce get-cost-and-usage --time-period Start=$(date +%Y-%m-01),End=$(date +%Y-%m-%d) --granularity MONTHLY --metrics BlendedCost
+      runOnStart: true
+      providers: []
+      children: []
+    EC2Instances:
+      id: EC2Instances
+      type: Cli
+      displayName: List EC2 Instances
+      command: >
+        aws ec2 describe-instances --query "Reservations[*].Instances[*].Tags[?Key=='Name'].Value[]" --output text
+      runOnStart: true
+      providers: []
+      children: []
+    Metrics:
+      id: Metrics
+      type: Grid
+      displayName: EC2 Metrics
+      providers: []
+      children:
+        - $ref: '#/Console/widgets/CPUMetrics'
+        - $ref: '#/Console/widgets/NetworkMetrics'
+    CPUMetrics:
+      id: CPUMetrics
+      type: AwsCloudWatchMetricGraph
+      displayName: CPU Utilization - All Instances
+      metrics:
+        - metricNamespace: AWS/EC2
+          metricName: CPUUtilization
+          metricDisplayName: Average
+          statistic: Average
+          dimensions: []
+        - metricNamespace: AWS/EC2
+          metricName: CPUUtilization
+          metricDisplayName: Max
+          statistic: Maximum
+          dimensions: []
+        - metricNamespace: AWS/EC2
+          metricName: CPUUtilization
+          metricDisplayName: Min
+          statistic: Minimum
+          dimensions: []
+      timeRange:
+        time: 12
+        unit: h
+      region: us-east-1
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      children: []
+    NetworkMetrics:
+      id: NetworkMetrics
+      type: AwsCloudWatchMetricGraph
+      displayName: NetworkIn - All Instances
+      metrics:
+        - metricNamespace: AWS/EC2
+          metricName: NetworkIn
+          metricDisplayName: NetworkIn
+          statistic: Average
+          dimensions: []
+        - metricNamespace: AWS/EC2
+          metricName: NetworkOut
+          metricDisplayName: NetworkOut
+          statistic: Average
+          dimensions: []
+      timeRange:
+        time: 12
+        unit: h
+      region: us-east-1
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      children: []
+    Logs:
+      id: Logs
+      type: AwsCloudWatchLogs
+      displayName: Service Logs
+      region: us-east-1
+      logGroupName: INSERT_LOG_GROUP_NAME_HERE
+      timeRange:
+        time: 12
+        unit: h
+      events: []
+      providers:
+        - $ref: '#/Console/providers/AwsLocalProvider'
+      children: []
+  dependencies:
+    Markdown: '@tinystacks/ops-core-widgets'
+    Tabs: '@tinystacks/ops-core-widgets'
+    Grid: '@tinystacks/ops-core-widgets'
+    Cli: '@tinystacks/ops-core-widgets'
+    Panel: '@tinystacks/ops-core-widgets'
+    AwsCloudWatchLogs: '@tinystacks/ops-aws-core-widgets'
+    AwsCredentialsProvider: '@tinystacks/ops-aws-core-widgets'
+    AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-widgets'

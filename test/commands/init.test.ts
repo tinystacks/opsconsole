@@ -5,6 +5,7 @@ const mockLoggerError = jest.fn();
 const mockLoggerSucces = jest.fn();
 
 jest.mock('path', () => ({
+  ...jest.requireActual('path'),
   join: mockJoin
 }));
 

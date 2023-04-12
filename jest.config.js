@@ -24,6 +24,7 @@ module.exports = {
     "src/utils/ops-stack-api-utils/get-client.ts",
     "src/utils/ops-stack-api-utils/index.ts",
     "src/utils/ops-core/index.ts",
-    "src/utils/open/index.ts"
+    "src/utils/open/index.ts",
+    "src/utils/spinner/index.ts"
   ]
 };

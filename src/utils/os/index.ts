@@ -129,3 +129,7 @@ export function logAndThrow (message: string, e?: any): never {
   logger.error(message, e);
   throw new Error(message);
 }
+
+export async function sleep (milliseconds: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
