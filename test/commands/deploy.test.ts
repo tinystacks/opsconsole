@@ -22,7 +22,8 @@ jest.mock('path', () => {
   const original = jest.requireActual('path');
   return {
     resolve: mockResolve,
-    join: original.join
+    join: original.join,
+    normalize: original.normalize
   };
 });
 
