@@ -1,12 +1,12 @@
 const mockReadFileSync = jest.fn();
-const mockLoggerError = jest.fn();
+const mockLoggerVerbose = jest.fn();
 
 jest.mock('fs', () => ({
   readFileSync: mockReadFileSync
 }));
 
 jest.mock('../../src/logger', () => ({
-  error: mockLoggerError
+  verbose: mockLoggerVerbose
 }));
 
 import { getCredentials } from '../../src/utils/ops-stack-api-utils/get-credentials';
@@ -32,8 +32,8 @@ describe('get-credentials', () => {
       expect(mockReadFileSync).toBeCalled();
       expect(mockReadFileSync).toBeCalledWith('/tmp/.ops-console/credentials');
   
-      expect(mockLoggerError).toBeCalled();
-      expect(mockLoggerError).toBeCalledWith('Could not read file /tmp/.ops-console/credentials! File does not exist!');
+      expect(mockLoggerVerbose).toBeCalled();
+      expect(mockLoggerVerbose).toBeCalledWith('Could not read file /tmp/.ops-console/credentials! File does not exist!');
       
       expect(thrownError.message).toEqual('Cannot find credentials! Try running "ops-cli configure" and try again.');
     }
@@ -51,8 +51,8 @@ describe('get-credentials', () => {
       expect(mockReadFileSync).toBeCalled();
       expect(mockReadFileSync).toBeCalledWith('/tmp/.ops-console/credentials');
 
-      expect(mockLoggerError).toBeCalled();
-      expect(mockLoggerError).toBeCalledWith(`Failed to read file /tmp/.ops-console/credentials! ${mockError}`);
+      expect(mockLoggerVerbose).toBeCalled();
+      expect(mockLoggerVerbose).toBeCalledWith(`Failed to read file /tmp/.ops-console/credentials! ${mockError}`);
 
       expect(thrownError.message).toEqual('Cannot find credentials! Try running "ops-cli configure" and try again.');
     }
@@ -78,7 +78,7 @@ describe('get-credentials', () => {
     
     const result = getCredentials();
 
-    expect(mockLoggerError).not.toBeCalled();
+    expect(mockLoggerVerbose).not.toBeCalled();
 
     expect(result).toEqual(mockCredentials);
   });

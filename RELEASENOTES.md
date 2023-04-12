@@ -1,1 +1,2 @@
-
+- Add spinner on deploy command
+- Change getCredential error handling to only log source error on verbose channel
