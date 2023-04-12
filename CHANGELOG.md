@@ -1,3 +1,8 @@
+v0.0.13
+---
+- Add spinner on deploy command
+- Change getCredential error handling to only log source error on verbose channel
+ 
 v0.0.12
 ---
 - Adding sample dashboard for general AWS
