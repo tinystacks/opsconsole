@@ -6,25 +6,20 @@ import logger from '../../logger';
 import isNil from 'lodash.isnil';
 import { promisifyChildProcess, replaceFromInDockerFile, runCommand, streamToFile } from '../../utils/os';
 import { ImageArchitecture, UpOptions } from '../../types';
-import { DEFAULT_CONFIG_FILENAME } from '../../constants';
+import { DEFAULT_CONFIG_FILENAME, Platform, SEP } from '../../constants';
 import { ChildProcess } from 'child_process';
 import { S3 } from '@aws-sdk/client-s3';
 import { getConsoleParser } from '../../utils/ops-core';
 
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
-const API_FILEPATH = './Dockerfile.api';
-const UI_FILEPATH = './Dockerfile.ui';
-const EXIT_0 = process.platform === 'win32' ? 'VER>NUL' : 'true';
-const AWS_CONFIG_PATH = process.platform === 'win32' ? '%USERPROFILE%' : '$HOME';
-const SEPARATOR = ' && ';
 
 async function startNetwork () {
   try {
     const commands = [
-      `docker network rm ops-console || ${EXIT_0}`,
+      `docker network rm ops-console || ${Platform.ExitSuccess}`,
       'docker network create -d bridge ops-console'
-    ].join(SEPARATOR);
+    ].join(SEP);
     await promisifyChildProcess(runCommand(commands)).catch((e) => {
       const isChildProcessOutput: boolean = !Number.isNaN(e.exitCode) && !isNil(e.stdout) && !isNil(e.stderr);
       if (isChildProcessOutput) {
@@ -48,7 +43,8 @@ async function getDependencies (dir: string, file: string) {
     const parsedYaml = ConsoleParser.parse(configJson);
     const dependencies = new Set(Object.values(parsedYaml.dependencies));
     const dependenciesString = Array.from(dependencies).join(' ');
-    return `'${dependenciesString}'`;
+    // must be double quotes for Windows compatability
+    return `"${dependenciesString}"`;
   } catch (e) {
     logger.error('Failed to install dependencies. Please verify that your yaml template is formatted correctly.');
     throw e;
@@ -64,25 +60,25 @@ async function pullDockerFiles (tag: string) {
     Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
     Key: 'Dockerfile.api'
   });
-  await streamToFile(apiRes.Body, API_FILEPATH);
-  replaceFromInDockerFile(API_FILEPATH, tag);
+  await streamToFile(apiRes.Body, Platform.ApiFilePath);
+  replaceFromInDockerFile(Platform.ApiFilePath, tag);
   const uiRes = await s3Client.getObject({
     Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
     Key: 'Dockerfile.ui'
   });
-  await streamToFile(uiRes.Body, UI_FILEPATH);
-  replaceFromInDockerFile(UI_FILEPATH, tag);
+  await streamToFile(uiRes.Body, Platform.UiFilePath);
+  replaceFromInDockerFile(Platform.UiFilePath, tag);
 }
 
 function runBackend (dependencies: string, dir: string, file: string) {
   try {
     logger.info('Launching backend on localhost:8000');
     const commands = [
-      `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${API_FILEPATH} -t ops-api .`,
-      `docker container stop ops-api || ${EXIT_0}`,
-      `docker container rm ops-api || ${EXIT_0}`,
-      `docker run --name ops-api -v ${AWS_CONFIG_PATH}/.aws:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api`
-    ].join(SEPARATOR);
+      `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${Platform.ApiFilePath} -t ops-api .`,
+      `docker container stop ops-api || ${Platform.ExitSuccess}`,
+      `docker container rm ops-api || ${Platform.ExitSuccess}`,
+      `docker run --name ops-api -v ${Platform.AwsConfigPath}:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api`
+    ].join(SEP);
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
       if (data.includes(BACKEND_SUCCESS_INDICATOR)) { 
@@ -100,11 +96,11 @@ function runFrontend (dependencies: string) {
   try {
     logger.info('Launching frontend on localhost:3000');
     const commands = [
-      `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${UI_FILEPATH} -t ops-frontend .`,
-      `docker container stop ops-frontend || ${EXIT_0}`,
-      `docker container rm ops-frontend || ${EXIT_0}`,
-      'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend;'
-    ].join(SEPARATOR);
+      `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${Platform.UiFilePath} -t ops-frontend .`,
+      `docker container stop ops-frontend || ${Platform.ExitSuccess}`,
+      `docker container rm ops-frontend || ${Platform.ExitSuccess}`,
+      'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend'
+    ].join(SEP);
     const childProcess = runCommand(commands);
     childProcess.stdout.on('data', (data) => {
       if (data.includes(FRONTEND_SUCCESS_INDICATOR )) {
@@ -147,11 +143,11 @@ function validateConfigFilePath (configFile: string) {
 function handleExitSignalCleanup (backendProcess?: ChildProcess, frontendProcess?: ChildProcess) {
   function cleanup () {
     logger.info('Cleaning up...');
-    fs.unlink(API_FILEPATH, () => { return; });
-    fs.unlink(UI_FILEPATH, () => { return; });
+    fs.unlink(Platform.ApiFilePath, () => { return; });
+    fs.unlink(Platform.UiFilePath, () => { return; });
     backendProcess?.kill();
     frontendProcess?.kill();
-    runCommand(`docker stop ops-frontend ops-api || ${EXIT_0} && docker network rm ops-console || ${EXIT_0}`);
+    runCommand(`docker stop ops-frontend ops-api || ${Platform.ExitSuccess} && docker network rm ops-console || ${Platform.ExitSuccess}`);
   }
   process.on('SIGINT', cleanup);
   process.on('SIGQUIT', cleanup);

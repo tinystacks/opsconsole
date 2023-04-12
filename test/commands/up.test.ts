@@ -18,6 +18,7 @@ const mockReplaceFromInDockerFile = jest.fn();
 const mockGetConsoleParser = jest.fn();
 
 jest.mock('path', () => ({
+  ...jest.requireActual('path'),
   resolve: mockResolve,
   dirname: mockDirname,
   basename: mockBasename
@@ -320,8 +321,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'x86');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -355,8 +356,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'x86');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -390,8 +391,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'arm');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'arm');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -425,8 +426,8 @@ describe('up', () => {
 
       expect(mockReplaceFromInDockerFile).toBeCalled();
       expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.api', 'arm');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('./Dockerfile.ui', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'arm');
+      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'arm');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -501,8 +502,8 @@ describe('up', () => {
 
     expect(mockUnlink).toBeCalled();
     expect(mockUnlink).toBeCalledTimes(2);
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.api', expect.any(Function));
-    expect(mockUnlink).toBeCalledWith('./Dockerfile.ui', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.api', expect.any(Function));
+    expect(mockUnlink).toBeCalledWith('Dockerfile.ui', expect.any(Function));
 
     expect(mockOpsApiChildProcess.kill).toBeCalled();
     
@@ -510,6 +511,6 @@ describe('up', () => {
 
     expect(mockRunCommand).toBeCalled();
     expect(mockRunCommand).toBeCalledTimes(4);
-    expect(mockRunCommand.mock.calls[3][0]).toEqual('docker stop ops-frontend ops-api || true; docker network rm ops-console || true');
+    expect(mockRunCommand.mock.calls[3][0]).toEqual('docker stop ops-frontend ops-api || true && docker network rm ops-console || true');
   });
 });
