@@ -7,11 +7,13 @@ import {
   green,
   black
 } from 'colors';
-import { CliError } from '../errors';
+import { CliError, ExecSignalError } from '../errors';
 
 const logger = {
-  error (message: string) {
-    console.error(red(`Error: ${message}`));
+  error (message: string, e?: any) {
+    if (!(e instanceof ExecSignalError)) {
+      console.error(red(`Error: ${message}`));
+    }
   },
 
   debug (message: string | any) {

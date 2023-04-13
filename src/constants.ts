@@ -16,6 +16,7 @@ class Platform {
   static ApiFilePath = path.normalize('./Dockerfile.api');
   static UiFilePath = path.normalize('./Dockerfile.ui');
   static AwsConfigPath = path.normalize(`${this.Home}/.aws`);
+  static Null = process.platform === 'win32' ? 'nul' : '/dev/null';
 }
 
 const SEP = ' && ';

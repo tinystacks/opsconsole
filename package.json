@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "cleanup": "rm -rf dist || true && rm *.tgz || true",
+    "cleanup": "rm -rf dist; rm *.tgz;",
     "clean-build": "npm ci && npm run cleanup && npm run build",
     "dependency-check": "./node_modules/.bin/depcheck",
     "fresh-global-install": "npm run hard-clean; npm i; npm run build; npm uninstall -g; npm i -g",
@@ -31,7 +31,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test-cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test-file": "NODE_OPTIONS=--experimental-vm-modules jest ./test/utils/os.test.ts",
-    "test-file-cov": "NODE_OPTIONS=--experimental-vm-modules jest ./testindex.test.ts --coverage",
+    "test-file-cov": "NODE_OPTIONS=--experimental-vm-modules jest ./test/utils/os.test.ts --coverage",
     "view-test-cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage || true && open coverage/lcov-report/index.html",
     "prepare": "husky install"
   },
@@ -70,6 +70,7 @@
     "http-errors": "^2.0.0",
     "js-yaml": "^4.1.0",
     "lodash.isnil": "^4.0.0",
+    "open": "^9.1.0",
     "ora": "^6.3.0",
     "prompts": "^2.4.2"
   }

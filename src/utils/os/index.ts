@@ -4,88 +4,83 @@ import { Readable } from 'stream';
 import logger from '../../logger';
 import { OsOutput } from '../../types';
 import { API_IMAGE_ECR_URL, UI_IMAGE_ECR_URL } from '../../constants';
+import isNil from 'lodash.isnil';
+import { ExecSignalError } from '../../errors/exec-signal-error';
+
+export function runCommand (command: string, opts?: ExecOptions): ChildProcess {
+  if (opts) {
+    opts.env = { ...process.env, ...(opts.env || {}) };
+  }
+
+  logger.verbose(command);
+  const childProcess = exec(command, opts);
+
+  childProcess.stdout.on('data', (data) => {
+    logger.verbose(data);
+  });
+
+  childProcess.stderr.on('data', (data) => {
+    logger.verbose(data);
+  });
+
+  process.stdin.pipe(childProcess.stdin);
+
+  childProcess.on('error', (e: Error) => {
+    logger.verbose(`Failed to execute command:\n${command}\nError: ${e.message}`);
+  });
+
+  childProcess.on('exit', (code: number, signal: string) => {
+    if (!isNil(code) && code !== 0) logger.verbose(`The following command(s) exited with code: ${code}\n${command}`);
+    if (signal) logger.verbose(`Exited due to signal: ${signal}`);
+  });
+
+  return childProcess;
+}
 
 export async function runCommandSync (command: string, opts?: ExecOptions): Promise<OsOutput> {
+  const childProcess = runCommand(command, opts);
   return new Promise((resolve, reject) => {
-    try {
-      // we "return await" here so that errors can be handled within this function to execute retry logic
-      if (opts) {
-        opts.env = { ...process.env, ...(opts.env || {}) };
+    const standardOut: string[] = [];
+    const standardError: string[] = [];
+
+    childProcess.stdout?.on('data', (data) => {
+      standardOut.push(data);
+    });
+    
+    childProcess.stderr?.on('data', (data) => {
+      standardError.push(data);
+    });
+
+    childProcess.on('error', (error: Error) => {
+      reject(error);
+    });
+    
+    childProcess.on('exit', (code: number, signal: string) => {
+      if (signal) {
+        reject(new ExecSignalError(
+          signal,
+          standardOut.join('\n'),
+          standardError.join('\n'),
+          code
+        ));
       }
-      const standardOut: string[] = [];
-      const standardError: string[] = [];
-      let exitCode: number;
-      
-      logger.log(command);
-      const childProcess = exec(command, opts);
-
-      childProcess.stdout.on('data', (data) => {
-        console.log(data);
-        standardOut.push(data);
-      });
-      
-      childProcess.stderr.on('data', (data) => {
-        console.error(data);
-        standardError.push(data);
-      });
-
-      process.stdin.pipe(childProcess.stdin);
-
-      childProcess.on('error', (error: Error) => {
-        logger.error(`Failed to execute command "${command}"`);
-        reject(error);
-      });
-      
-      childProcess.on('exit', (code: number, signal: string) => {
-        if (signal) logger.info(`Exited due to signal: ${signal}`);
-        exitCode = code;
+      if (code === 0) {
         resolve({
           stdout: standardOut.join('\n'),
           stderr: standardError.join('\n'),
-          exitCode
+          exitCode: code
         });
-      });
-    } catch (error) {
-      logger.error(`Failed to execute command "${command}"`);
-      reject(error);
-    }
+      } else {
+        reject({
+          stdout: standardOut.join('\n'),
+          stderr: standardError.join('\n'),
+          exitCode: code
+        });
+      }
+    });
   });
 }
 
-export function runCommand (command: string, opts?: ExecOptions): ChildProcess {
-  try {
-    if (opts) {
-      opts.env = { ...process.env, ...(opts.env || {}) };
-    }
-
-    logger.log(command);
-    const childProcess = exec(command, opts);
-
-    childProcess.stdout.on('data', (data) => {
-      console.log(data);
-    });
-
-    childProcess.stderr.on('data', (data) => {
-      console.error(data);
-    });
-
-    process.stdin.pipe(childProcess.stdin);
-
-    childProcess.on('error', (error: Error) => {
-      logger.error(`Failed to execute command "${command}"`);
-      throw error;
-    });
-
-    childProcess.on('exit', (code: number, signal: string) => {
-      if (signal) logger.info(`Exited due to signal: ${signal}`);
-    });
-
-    return childProcess;
-  } catch (error) {
-    logger.error(`Failed to execute command "${command}"`);
-    throw error;
-  }
-}
 
 export async function streamToFile (Body: any, filePath: string): Promise<void> {
   await new Promise<void>((resolve, reject) => {
@@ -108,45 +103,10 @@ export async function streamToString (stream: Readable): Promise<string> {
   return Buffer.concat(chunks).toString('utf-8');
 }
 
-export async function promisifyChildProcess (childProcess: ChildProcess): Promise<OsOutput> {
-  return new Promise((resolve, reject) => {
-    const standardOut: string[] = [];
-    const standardError: string[] = [];
-
-    childProcess.stdout?.on('data', (data) => {
-      standardOut.push(data);
-    });
-    
-    childProcess.stderr?.on('data', (data) => {
-      standardError.push(data);
-    });
-
-    childProcess.on('error', (error: Error) => {
-      reject(error);
-    });
-    
-    childProcess.on('exit', (code: number, signal: string) => {
-      if (code === 0) {
-        resolve({
-          stdout: standardOut.join('\n'),
-          stderr: standardError.join('\n'),
-          exitCode: code
-        });
-      } else {
-        reject({
-          stdout: standardOut.join('\n'),
-          stderr: standardError.join('\n'),
-          exitCode: code,
-          signal
-        });
-      }
-    });
-  });
-}
-
 export function replaceFromInDockerFile (filePath: string, tag?: string): void {
   try {
-    const component = filePath.split('.').at(-1);
+    const filePathParts = filePath.split('.');
+    const component = filePathParts[filePathParts.length - 1];
     const file = fs.readFileSync(filePath, 'utf-8');
     const regEx = new RegExp('^FROM.*');
     let replacedFile: string;
@@ -160,6 +120,14 @@ export function replaceFromInDockerFile (filePath: string, tag?: string): void {
     logger.error(`File not found: ${filePath}`);
     throw e;
   }
+}
+
+export function logAndThrow (message: string, e?: any): never {
+  if (e instanceof ExecSignalError) {
+    throw e;
+  }
+  logger.error(message, e);
+  throw new Error(message);
 }
 
 export async function sleep (milliseconds: number): Promise<void> {
