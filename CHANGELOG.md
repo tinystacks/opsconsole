@@ -1,3 +1,10 @@
+v0.0.15
+---
+- added -V, --verbose flag to 'up' command
+- better cleanup handling on errors and exits
+- more succinct logging without verbose flag
+- README updates
+ 
 v0.0.14
 ---
 - Small patch removing forced failures on docker build to prevent failures on warnings
