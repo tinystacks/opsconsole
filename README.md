@@ -86,6 +86,21 @@ npm i -g;
 # Use the CLI, refer to the usage guide below
 ops-cli -v;
 ```
+# Deployment
+Deploy a hosted version of the TinyStacks Ops Console in minutes. 
+
+```
+# Routes to signup UI to obtain an auth token
+ops-cli signup; 
+
+ops-cli configure
+# paste your token here
+
+# deploy your ops-console to the TinyStacks cloud!
+ops-cli deploy -c DASHBOARD-NAME.yaml
+```
+
+That's it! Deployments take a few minutes. Please note that when deploying a hosted version of the Ops Console, you must enter an access/secret keys. Hosted versions cannot use local AWS credential profiles. 
 
 # Usage
 
