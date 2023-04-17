@@ -1,3 +1,7 @@
+v0.0.16
+---
+- README updates for deploying hosted version 
+ 
 v0.0.15
 ---
 - added -V, --verbose flag to 'up' command
