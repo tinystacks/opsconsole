@@ -1,10 +1,10 @@
 {
-  "name": "@tinystacks/ops-cli",
+  "name": "@tinystacks/opsconsole",
   "version": "0.0.17",
   "description": "",
   "main": "dist/index.js",
   "bin": {
-    "ops-cli": "./dist/index.js"
+    "opsconsole": "./dist/index.js"
   },
   "files": [
     "dist",

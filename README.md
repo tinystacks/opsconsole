@@ -16,7 +16,7 @@ The OpsConsole is a personalized portal that can be used for many cloud develope
 # 📍 Roadmap
 - [x] CLI widget to save and run scripts
 - [x] Executable actions within widgets (ex. kill task for AWS ECS)
-- [ ] `ops-cli deploy` for a hosted dashboard
+- [ ] `opsconsole deploy` for a hosted dashboard
 - [ ] Additional provider integrations (GitHub, Google Cloud, Azure, Snowflake, Cloudflare)
 - [ ] Edit ECS Environment variables
 - [ ] CI/CD widget
@@ -29,7 +29,7 @@ Follow installation instructions below to get the CLI installed. For a very basi
 ### Installation
 ```bash
 # Install CLI
-npm i -g @tinystacks/ops-cli;
+npm i -g @tinystacks/opsconsole;
 
 # Make sure you have Docker installed and ports 3000 and 8000 open.
 ```
@@ -39,17 +39,17 @@ npm i -g @tinystacks/ops-cli;
 This package includes other sample dashboard as well. As an example, it includes a sample dashboard that has ECS and AWS account info. To use that, follow these steps:
 
 ```
-curl https://raw.githubusercontent.com/tinystacks/ops-cli/main/samples/ecs-dashboard-sample.yml -o ecs-dashboard-sample.yml
+curl https://raw.githubusercontent.com/tinystacks/opsconsole/main/samples/ecs-dashboard-sample.yml -o ecs-dashboard-sample.yml
 
 # Modify line 6 by changing [your AWS profile] to your local AWS profile name
 # Modify lines [22-24] by changing the region, ecs clustername, and ecs service names to match resources in your account
 
-ops-cli up -c ecs-dashboard-sample.yml
+opsconsole up -c ecs-dashboard-sample.yml
 ```
 #### Basic
 ```
-ops-cli init;
-ops-cli up;
+opsconsole init;
+opsconsole up;
 ```
 # Installation
 
@@ -63,41 +63,41 @@ Also please make sure that ports 8000 and 3000 are open, as those ports are used
 ## Install from the Global NPM registry
 ```bash
 # Install from the public npm registry
-npm i -g @tinystacks/ops-cli;
+npm i -g @tinystacks/opsconsole;
 
 # Use the CLI, refer to the usage guide below
-ops-cli -v;
+opsconsole -v;
 
 ```
 
 ## Local Installation
 ```bash
 # Clone this package
-git clone https://github.com/tinystacks/ops-cli.git;
+git clone https://github.com/tinystacks/opsconsole.git;
 
 # Install dependencies and build
 npm i; npm run build;
 
 # Install the CLI globally
 # Using the -g option installs the ops cli to your shell scope instead of the package scope. 
-#  It adds the CLI command to bin, allowing you to call ops-cli from anywhere
+#  It adds the CLI command to bin, allowing you to call opsconsole from anywhere
 npm i -g;
 
 # Use the CLI, refer to the usage guide below
-ops-cli -v;
+opsconsole -v;
 ```
 # Deployment
 Deploy a hosted version of the TinyStacks Ops Console in minutes. 
 
 ```
 # Routes to signup UI to obtain an auth token
-ops-cli signup; 
+opsconsole signup; 
 
-ops-cli configure
+opsconsole configure
 # paste your token here
 
 # deploy your ops-console to the TinyStacks cloud!
-ops-cli deploy -c DASHBOARD-NAME.yaml
+opsconsole deploy -c DASHBOARD-NAME.yaml
 ```
 
 That's it! Deployments take a few minutes. 
@@ -107,13 +107,13 @@ That's it! Deployments take a few minutes.
 # Usage
 
 ## CLI Commands
-### ops-cli
+### opsconsole
 Shows usage and help information
 
-### ops-cli init
+### opsconsole init
 Creates a sample config file that includes a basic template. If you don't 
 
-### ops-cli up
+### opsconsole up
 Starts the ops console by pulling down the docker images for the ops api (public.ecr.aws/tinystacks/ops-api) and frontend (public.ecr.aws/tinystacks/ops-frontend) and rebuilding them using dependencies included in your yaml file. This may take several minutes depending on your system's available resources. It creates a docker networking bridge called ops-console through which the containers communicate with each other.
 
 #### Options
@@ -146,7 +146,7 @@ providers:
     credentials:
       # Option A: local credentials
       profileName: default 
-      # Option B: Access/Secret keys (required when deploying with ops-cli deploy)
+      # Option B: Access/Secret keys (required when deploying with opsconsole deploy)
       # AwsAccessKeyId:
       # AwsSecretAccessKey: 
 ```

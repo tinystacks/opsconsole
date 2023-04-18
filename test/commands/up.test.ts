@@ -155,7 +155,7 @@ describe('up', () => {
 
     expect(mockLoggerError).toBeCalled();
     expect(mockLoggerError).toBeCalledTimes(1);
-    expect(mockLoggerError).toBeCalledWith('ops-cli up failed! To debug, please run with the -V, --verbose flag', logAndThrowError);
+    expect(mockLoggerError).toBeCalledWith('opsconsole up failed! To debug, please run with the -V, --verbose flag', logAndThrowError);
   });
   it('logs an error if the network fails to start', async () => {
     mockResolve.mockReturnValue('./config.yml');
@@ -199,7 +199,7 @@ describe('up', () => {
 
     expect(mockLoggerError).toBeCalled();
     expect(mockLoggerError).toBeCalledTimes(1);
-    expect(mockLoggerError).toBeCalledWith('ops-cli up failed! To debug, please run with the -V, --verbose flag', logAndThrowError);
+    expect(mockLoggerError).toBeCalledWith('opsconsole up failed! To debug, please run with the -V, --verbose flag', logAndThrowError);
   });
   it('validates inputs, starts network, and runs api and ui images', async () => {
     mockResolve.mockReturnValue('./config.yml');
@@ -470,7 +470,7 @@ describe('up', () => {
       expect(mockLogAndThrow).toBeCalledWith('ops does not currently support mips');
 
       expect(mockLoggerError).toBeCalled();
-      expect(mockLoggerError).toBeCalledWith('ops-cli up failed! To debug, please run with the -V, --verbose flag', logAndThrowError);
+      expect(mockLoggerError).toBeCalledWith('opsconsole up failed! To debug, please run with the -V, --verbose flag', logAndThrowError);
     });
   });
   it('set cleanup handlers', async () => {

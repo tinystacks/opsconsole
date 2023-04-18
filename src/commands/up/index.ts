@@ -195,7 +195,7 @@ async function up (options: UpOptions) {
     logger.info('This may take a moment.');
   } catch (e) {
     const verboseHint = process.env.VERBOSE === 'true' ? '' : ' To debug, please run with the -V, --verbose flag';
-    logger.error(`ops-cli up failed!${verboseHint}`, e);
+    logger.error(`opsconsole up failed!${verboseHint}`, e);
   }
 }
 
