@@ -1,3 +1,7 @@
+v0.0.17
+---
+- Updating sample ECS dashboard with parameter support
+ 
 v0.0.16
 ---
 - README updates for deploying hosted version 
