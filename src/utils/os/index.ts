@@ -1,6 +1,7 @@
 import { ChildProcess, exec, ExecOptions } from 'child_process';
 import fs from 'fs';
 import { Readable } from 'stream';
+import net from 'net';
 import logger from '../../logger';
 import { OsOutput } from '../../types';
 import { API_IMAGE_ECR_URL, UI_IMAGE_ECR_URL } from '../../constants';
@@ -132,4 +133,23 @@ export function logAndThrow (message: string, e?: any): never {
 
 export async function sleep (milliseconds: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+export async function isPortAvailable (port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const s = net.createServer();
+    s.once('error', (e: any) => {
+      s.close();
+      if (e.code == 'EADDRINUSE') {
+        resolve(false);
+      } else {
+        logAndThrow(e.message, e);
+      }
+    });
+    s.once('listening', () => {
+      resolve(true);
+      s.close();
+    });
+    s.listen(port);
+  });
 }

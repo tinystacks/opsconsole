@@ -8,6 +8,7 @@ const mockReadFileSync = jest.fn();
 const mockWriteFileSync = jest.fn();
 const mockCreateWriteStream = jest.fn();
 const mockLoggerVerbose = jest.fn();
+const mockCreateServer = jest.fn();
 
 jest.mock('child_process', () => {
   const {
@@ -35,21 +36,33 @@ jest.mock('fs', () => ({
   createWriteStream: mockCreateWriteStream
 }));
 
+jest.mock('net', () => ({
+  createServer: mockCreateServer
+}));
+
 import {
   ExecOptions
 } from 'child_process';
 import {
+  isPortAvailable,
   logAndThrow,
   replaceFromInDockerFile,
   runCommand, runCommandSync, sleep, streamToFile, streamToString
 } from '../../src/utils/os';
 import { Readable } from 'stream';
 import { ExecSignalError } from '../../src/errors';
+import { MockServer } from '../mocks/MockServer';
 
 let childProcessStub: MockChildProcess;
 function execStub (_command: string, _opts: ExecOptions) {
   childProcessStub = new MockChildProcess();
   return childProcessStub;
+}
+
+let serverStub: MockServer;
+function createServerStub () {
+  serverStub = new MockServer();
+  return serverStub;
 }
 
 describe('os utils', () => {
@@ -475,6 +488,48 @@ describe('os utils', () => {
 
         expect(thrownError).toEqual(mockError);
       }
+    });
+  });
+
+  describe('isPortAvailable', () => {
+    beforeEach(() => {
+      mockCreateServer.mockImplementation(createServerStub);
+    });
+
+    it('address is in use', async () => {
+      const mockError = { code: 'EADDRINUSE' };
+      const resultPromise = isPortAvailable(8000);
+      const server = serverStub;  
+      server.errorCb(mockError);
+      const response = await resultPromise;
+
+      expect(response).toEqual(false);
+    });
+    it('logs and throws unknown error', async () => {
+      const mockError = new Error('Error!')
+      let thrownError;
+      try {
+        const resultPromise = isPortAvailable(8000);
+        const server = serverStub;  
+        server.errorCb(mockError);
+        await resultPromise;
+      } catch (e) {
+        thrownError = e;
+      } finally {
+        expect(mockLoggerError).toBeCalled();
+        expect(mockLoggerError).toBeCalledTimes(1);
+        expect(mockLoggerError).toBeCalledWith('Error!', mockError);
+
+        expect(thrownError).toEqual(mockError);
+      }
+    });
+    it('port is listening', async () => {
+      const resultPromise = isPortAvailable(8000);
+      const server = serverStub;  
+      server.listeningCb();
+      const response = await resultPromise;
+
+      expect(response).toEqual(true);
     });
   });
 });

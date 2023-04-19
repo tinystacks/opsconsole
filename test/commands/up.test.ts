@@ -22,6 +22,7 @@ const mockParseConfig = jest.fn();
 const mockValidateDependencies = jest.fn();
 const mockGetOpen = jest.fn();
 const mockOpen = jest.fn();
+const mockIsPortAvailable = jest.fn();
 
 jest.mock('path', () => ({
   ...jest.requireActual('path'),
@@ -48,7 +49,8 @@ jest.mock('../../src/utils/os', () => ({
   promisifyChildProcess: mockPromisifyChildProcess,
   streamToFile: mockStreamToFile,
   replaceFromInDockerFile: mockReplaceFromInDockerFile,
-  logAndThrow: mockLogAndThrow
+  logAndThrow: mockLogAndThrow,
+  isPortAvailable: mockIsPortAvailable
 }));
 
 jest.mock('../../src/utils/config', () => ({
@@ -107,7 +109,7 @@ describe('up', () => {
     // for spies
     jest.restoreAllMocks();
   });
-  it('throws an error if the config file does not exist', async () => {
+  it('logs and throws an error if the config file does not exist', async () => {
     mockResolve.mockReturnValue('./config.yml');
     mockExistsSync.mockReturnValue(false);
 
@@ -122,12 +124,32 @@ describe('up', () => {
     expect(mockLogAndThrow).toBeCalled();
     expect(mockLogAndThrow).toBeCalledWith('Specified config file ./config.yml does not exist.');
   });
-  it ('logs an error if dependencies do not exist', async () => {
+  it('logs and throws an error if ports are in use', async () => {
+    mockResolve.mockReturnValue('./config.yml');
+    mockExistsSync.mockReturnValue(true);
+    mockDirname.mockReturnValue('./');
+    mockBasename.mockReturnValue('config.yml');
+    mockIsPortAvailable.mockResolvedValueOnce(false);
+    mockIsPortAvailable.mockResolvedValueOnce(false);
+
+
+    await up({});
+
+    expect(mockIsPortAvailable).toBeCalled();
+    expect(mockIsPortAvailable).toBeCalledTimes(2);
+    expect(mockIsPortAvailable).toBeCalledWith(8000);
+    expect(mockIsPortAvailable).toBeCalledWith(3000);
+
+    expect(mockLogAndThrow).toBeCalled();
+    expect(mockLogAndThrow).toBeCalledWith(`The following port(s) are not available: 8000, 3000`);
+  });
+  it ('logs and throws an error if dependencies do not exist', async () => {
     mockResolve.mockReturnValue('./config.yml');
     mockExistsSync.mockReturnValue(true);
     mockDirname.mockReturnValue('./');
     mockBasename.mockReturnValue('config.yml');
     mockReadFileSync.mockReturnValue('');
+    mockIsPortAvailable.mockResolvedValue(true);
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     const validationError = new Error('Error');
@@ -157,12 +179,13 @@ describe('up', () => {
     expect(mockLoggerError).toBeCalledTimes(1);
     expect(mockLoggerError).toBeCalledWith('ops-cli up failed! To debug, please run with the -V, --verbose flag', logAndThrowError);
   });
-  it('logs an error if the network fails to start', async () => {
+  it('logs and throws an error if the network fails to start', async () => {
     mockResolve.mockReturnValue('./config.yml');
     mockExistsSync.mockReturnValue(true);
     mockDirname.mockReturnValue('./');
     mockBasename.mockReturnValue('config.yml');
     mockReadFileSync.mockReturnValue('');
+    mockIsPortAvailable.mockResolvedValue(true);
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     mockValidateDependencies.mockResolvedValue(undefined);
@@ -207,6 +230,7 @@ describe('up', () => {
     mockDirname.mockReturnValue('./');
     mockBasename.mockReturnValue('config.yml');
     mockReadFileSync.mockReturnValue('');
+    mockIsPortAvailable.mockResolvedValue(true);
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     mockValidateDependencies.mockResolvedValue(undefined);
