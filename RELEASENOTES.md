@@ -1,1 +1,1 @@
-
+- Renamed from ops-cli to opsconsole
