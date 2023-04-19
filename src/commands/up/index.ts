@@ -13,6 +13,17 @@ import { getOpen } from '../../utils/open';
 const BACKEND_SUCCESS_INDICATOR = 'Running on http://localhost:8000';
 const FRONTEND_SUCCESS_INDICATOR = 'ready - started server on 0.0.0.0:3000';
 
+function validateConfigFilePath (configFile: string) {
+  const absolutePath = path.resolve(configFile || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
+  if (fs.existsSync(absolutePath)) {
+    return {
+      parentDirectory: path.dirname(absolutePath),
+      file: path.basename(absolutePath)
+    };
+  }
+  logAndThrow(`Specified config file ${absolutePath} does not exist.`);
+}
+
 function validateArchitecture (arch: string) {
   switch (arch) {
     case 'x86':
@@ -28,17 +39,6 @@ function validateArchitecture (arch: string) {
     default:
       logAndThrow(`ops does not currently support ${arch}`);
   }
-}
-
-function validateConfigFilePath (configFile: string) {
-  const absolutePath = path.resolve(configFile || `${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
-  if (fs.existsSync(absolutePath)) {
-    return {
-      parentDirectory: path.dirname(absolutePath),
-      file: path.basename(absolutePath)
-    };
-  }
-  logAndThrow(`Specified config file ${absolutePath} does not exist.`);
 }
 
 async function getDependencies (file: string, parentDirectory: string) {
