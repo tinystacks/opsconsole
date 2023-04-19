@@ -1,3 +1,7 @@
+v0.0.18
+---
+- Added backend and frontend port flags to up command
+ 
 v0.0.17
 ---
 - Updating sample ECS dashboard with parameter support
