@@ -117,7 +117,7 @@ function runBackend (dependencies: string, file: string, dir: string, backendPor
   return childProcess;
 }
 
-function runFrontend (dependencies: string, open: any, backendPort: number, frontendPort: number) {
+function runFrontend (dependencies: string, open: any, frontendPort: number) {
   const frontendUrl = `0.0.0.0:${frontendPort}`;
   logger.info(`Launching frontend on ${frontendUrl}...`);
   const commands = [
@@ -206,7 +206,7 @@ async function up (options: UpOptions) {
     await startNetwork();
     const open = await getOpen();
     const backendProcess = runBackend(dependencies, file, parentDirectory, backendPort);
-    const frontendProcess = runFrontend(dependencies, open, backendPort, frontendPort);
+    const frontendProcess = runFrontend(dependencies, open, frontendPort);
     setProcessCleanupHandler(backendProcess, frontendProcess);
     logger.info('This may take a moment.');
   } catch (e) {
