@@ -1,3 +1,7 @@
+v0.0.19
+---
+- Removed unused parameter
+ 
 v0.0.18
 ---
 - Added backend and frontend port flags to up command
