@@ -211,7 +211,7 @@ async function up (options: UpOptions) {
     setProcessCleanupHandler(backendProcess, frontendProcess);
     logger.info('This may take a moment.');
   } catch (e) {
-    const verboseHint = process.env.VERBOSE === 'true' ? '' : ' To debug, please run with the -V, --verbose flag';
+    const verboseHint = process.env.VERBOSE === 'true' ? '' : ' To debug further, please run with the -V, --verbose flag';
     logger.error(`opsconsole up failed!${verboseHint}`, e);
   }
 }
