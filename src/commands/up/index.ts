@@ -4,7 +4,7 @@ import { S3 } from '@aws-sdk/client-s3';
 import { ChildProcess } from 'child_process';
 import isNil from 'lodash.isnil';
 import logger from '../../logger';
-import { logAndThrow, replaceFromInDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
+import { isPortAvailable, logAndThrow, replaceFromInDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
 import { ImageArchitecture, UpOptions } from '../../types';
 import { DEFAULT_CONFIG_FILENAME, Platform, SEP } from '../../constants';
 import { parseConfig, validateDependencies } from '../../utils/config';
@@ -38,6 +38,18 @@ function validateArchitecture (arch: string) {
       return ImageArchitecture.ARM;
     default:
       logAndThrow(`ops does not currently support ${arch}`);
+  }
+}
+
+async function validatePorts (backendPort: number, frontendPort: number) {
+  const portsInUse: number[] = [];
+  for (const port of [ backendPort, frontendPort ]) {
+    if (!(await isPortAvailable(port))) {
+      portsInUse.push(port);
+    }
+  }
+  if (portsInUse.length) {
+    logAndThrow(`The following port(s) are not available: ${portsInUse.join(', ')}`);
   }
 }
 
@@ -88,36 +100,38 @@ async function startNetwork () {
   }
 }
 
-function runBackend (dependencies: string, file: string, dir: string) {
-  logger.info('Launching backend on 0.0.0.0:8000...');
+function runBackend (dependencies: string, file: string, dir: string, backendPort: number) {
+  const backendUrl = `0.0.0.0:${backendPort}`;
+  logger.info(`Launching backend on ${backendUrl}...`);
   const commands = [
     `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${Platform.ApiFilePath} -t ops-api .`,
     `docker container stop ops-api || ${Platform.ExitSuccess}`,
     `docker container rm ops-api || ${Platform.ExitSuccess}`,
-    `docker run --name ops-api -v ${Platform.AwsConfigPath}:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p 8000:8000 --network=ops-console ops-api`
+    `docker run --name ops-api -v ${Platform.AwsConfigPath}:/root/.aws -v ${dir}:/config --env CONFIG_PATH="../config/${file}" -i -p ${backendPort}:8000 --network=ops-console ops-api`
   ].join(SEP);
   const childProcess = runCommand(commands);
   childProcess.stdout.on('data', (data) => {
     if (data.includes(BACKEND_SUCCESS_INDICATOR)) { 
-      logger.success('Ops console backend is now running on http://0.0.0.0:8000');
+      logger.success(`Ops console backend is now running on http://${backendUrl}`);
     }
   });
   return childProcess;
 }
 
-function runFrontend (dependencies: string, open: any) {
-  logger.info('Launching frontend on 0.0.0.0:3000...');
+function runFrontend (dependencies: string, open: any, frontendPort: number) {
+  const frontendUrl = `0.0.0.0:${frontendPort}`;
+  logger.info(`Launching frontend on ${frontendUrl}...`);
   const commands = [
     `docker build --pull --build-arg RUNTIME_DEPENDENCIES=${dependencies} -f ${Platform.UiFilePath} -t ops-frontend .`,
     `docker container stop ops-frontend || ${Platform.ExitSuccess}`,
     `docker container rm ops-frontend || ${Platform.ExitSuccess}`,
-    'docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p 3000:3000 --network=ops-console ops-frontend'
+    `docker run --name ops-frontend --env AWS_REGION=us-west-2 --env API_ENDPOINT=http://ops-api:8000 -i -p ${frontendPort}:3000 --network=ops-console ops-frontend`
   ].join(SEP);
   const childProcess = runCommand(commands);
   childProcess.stdout.on('data', (data) => {
     if (data.includes(FRONTEND_SUCCESS_INDICATOR )) {
-      logger.success('Ops console frontend is now running on http://0.0.0.0:3000');
-      open.default('http://0.0.0.0:3000');
+      logger.success(`Ops console frontend is now running on http://${frontendUrl}`);
+      open.default(`http://${frontendUrl}`);
     }
   });
   return childProcess;
@@ -178,19 +192,22 @@ async function up (options: UpOptions) {
   const { 
     arch = process.arch, 
     configFile,
-    verbose = false
+    verbose = false,
+    backendPort = 8000,
+    frontendPort = 3000
   } = options;
   try {
     setParentCleanupHandler();
     process.env.VERBOSE = verbose.toString();
     const { file, parentDirectory } = validateConfigFilePath(configFile);
     const tag = validateArchitecture(arch);
+    await validatePorts(backendPort, frontendPort);
     const dependencies = await getDependencies(file, parentDirectory);
     await pullDockerFiles(tag);
     await startNetwork();
     const open = await getOpen();
-    const backendProcess = runBackend(dependencies, file, parentDirectory);
-    const frontendProcess = runFrontend(dependencies, open);
+    const backendProcess = runBackend(dependencies, file, parentDirectory, backendPort);
+    const frontendProcess = runFrontend(dependencies, open, frontendPort);
     setProcessCleanupHandler(backendProcess, frontendProcess);
     logger.info('This may take a moment.');
   } catch (e) {

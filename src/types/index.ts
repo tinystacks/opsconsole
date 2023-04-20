@@ -10,6 +10,8 @@ export interface CommonOptions {
 
 export interface UpOptions extends CommonOptions {
   arch?: ImageArchitecture;
+  backendPort?: number;
+  frontendPort?: number;
 }
 
 export type Credentials = {

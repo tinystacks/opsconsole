@@ -38,6 +38,8 @@ try {
     .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86.  Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
     .option('-c, --config-file <config-file>', `Specifies a config file path. See the samples folder in this repo for sample config files. Looks for ${DEFAULT_CONFIG_FILENAME}.yml in the current working directory by default.`)
     .option('-V, --verbose', 'Displays details about the running command.')
+    .option('-b, --backend-port <backend-port>', 'Specifies the port to be exposed by the backend service. Uses port 8000 by default.')
+    .option('-f, --frontend-port <frontend-port>', 'Specifies the port to be exposed by the frontend service. Uses port 3000 by default.')
     .action(up);
 
   program.command('deploy')
