@@ -1,1 +1,1 @@
-- Removed unused parameter
+- Small documentation cleanup
