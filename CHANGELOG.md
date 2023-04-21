@@ -1,3 +1,7 @@
+v0.0.20
+---
+- Small documentation cleanup
+ 
 v0.0.19
 ---
 - Removed unused parameter
