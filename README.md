@@ -120,8 +120,10 @@ Starts the ops console by pulling down the docker images for the ops api (public
 |Flag|Arguments|Description|
 |----|---------|-----------|
 |-a, --arch|\<arch\>|  Specifies the architecture. Defaults to 'x86'. Options: 'x86', 'arm'
-|-c, --config-file|\<config-file\>|  Specifies a config file. See the `samples` folder in this repo for sample config files.
-|-V, --verbose||  Displays additional logs
+|-c, --config-file|\<config-file\>|  Specifies a config file. See the `samples` folder in this repo for sample config files. Looks for config.yml in the current working directory by default.
+|-V, --verbose||  Displays additional logs.
+|-b, --backend-port|\<backend-port\>| Specifies the port to be exposed by the backend service. Defaults to port 8000.
+|-f, --frontend-port|\<frontend-port\>| Specifies the port to be exposed by the frontend service. Defaults to port 3000.
 |-h, --help||             display help for this command
 
 ## Sample dashboards
