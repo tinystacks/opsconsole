@@ -4,3 +4,4 @@ export * from './init';
 export * from './list';
 export * from './signup';
 export * from './up';
+export * from './update';

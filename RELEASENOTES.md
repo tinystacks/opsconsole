@@ -1,1 +1,2 @@
-
+- Add update command to update cli to latest version
+- Make verbose flag global for all commands
