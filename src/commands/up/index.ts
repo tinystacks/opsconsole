@@ -191,13 +191,11 @@ async function up (options: UpOptions) {
   const { 
     arch = process.arch, 
     configFile,
-    verbose = false,
     backendPort = 8000,
     frontendPort = 3000
   } = options;
   try {
     setParentCleanupHandler();
-    process.env.VERBOSE = verbose.toString();
     const { file, parentDirectory } = validateConfigFilePath(configFile);
     const tag = validateArchitecture(arch);
     await validatePorts(backendPort, frontendPort);
