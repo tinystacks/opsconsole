@@ -8,7 +8,8 @@ import {
   init,
   list,
   signup,
-  up
+  up,
+  update
 } from './commands';
 import logger from './logger';
 const program = new Command();
@@ -26,8 +27,9 @@ try {
   const { version } = require('../package.json');
   program
     .name('opsconsole')
+    .version(version, '-v, --version')
     .description('TinyStacks opsconsole command line interface')
-    .version(version, '-v, --version');
+    .option('-V, --verbose', 'Displays additional logs.');
 
   program.command('init')
     .description('Creates a template file from the example shown in the README')
@@ -35,9 +37,8 @@ try {
 
   program.command('up')
     .description('Deploys ops console on local servers')
-    .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86.  Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
-    .option('-c, --config-file <config-file>', `Specifies a config file path. See the samples folder in this repo for sample config files. Looks for ${DEFAULT_CONFIG_FILENAME}.yml in the current working directory by default.`)
-    .option('-V, --verbose', 'Displays details about the running command.')
+    .addOption(new Option('-a, --arch <arch>', 'Specifies which architecture to use: arm or x86. Leave blank to allow auto-selection based on current OS.').choices(['arm', 'x86']))
+    .option('-c, --config-file <config-file>', `Specifies a config file path. See the samples folder in this repo for sample config files. Looks for ${DEFAULT_CONFIG_FILENAME} in the current working directory by default.`)
     .option('-b, --backend-port <backend-port>', 'Specifies the port to be exposed by the backend service. Uses port 8000 by default.')
     .option('-f, --frontend-port <frontend-port>', 'Specifies the port to be exposed by the frontend service. Uses port 3000 by default.')
     .action(up);
@@ -59,6 +60,17 @@ try {
     .description('List the details of your existing hosted consoles. Requires a paid account and an API key.')
     .option('-n, --console-name <console-name>', 'Specifies a console name to looks up details for a specific hosted console. If left blank details for all of your host consoles will be listed.')
     .action(list);
+  
+  program.command('update')
+    .description('Updates the cli to the latest version.')
+    .action(update);
+
+  // Note: Must not be an arrow function to receive the correct closure for "this".
+  program.on('option:verbose', function () {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    process.env.VERBOSE = this.opts().verbose;
+  });
 
   program.parseAsync()
     .catch(handleError);

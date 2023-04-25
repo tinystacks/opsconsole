@@ -29,7 +29,7 @@ Follow installation instructions below to get the CLI installed. For a very basi
 ### Installation
 ```bash
 # Install CLI
-npm i -g @tinystacks/opsconsole;
+npm i -g @tinystacks/ops-console;
 
 # Make sure you have Docker installed and ports 3000 and 8000 open.
 ```
@@ -39,7 +39,7 @@ npm i -g @tinystacks/opsconsole;
 This package includes other sample dashboard as well. As an example, it includes a sample dashboard that has ECS and AWS account info. To use that, follow these steps:
 
 ```
-curl https://raw.githubusercontent.com/tinystacks/opsconsole/main/samples/ecs-dashboard-sample.yml -o ecs-dashboard-sample.yml
+curl https://raw.githubusercontent.com/tinystacks/ops-console/main/samples/ecs-dashboard-sample.yml -o ecs-dashboard-sample.yml
 
 # Modify line 6 by changing [your AWS profile] to your local AWS profile name
 # Modify lines [22-24] by changing the region, ecs clustername, and ecs service names to match resources in your account
@@ -63,7 +63,7 @@ Also please make sure that ports 8000 and 3000 are open, as those ports are used
 ## Install from the Global NPM registry
 ```bash
 # Install from the public npm registry
-npm i -g @tinystacks/opsconsole;
+npm i -g @tinystacks/ops-console;
 
 # Use the CLI, refer to the usage guide below
 opsconsole -v;
@@ -73,7 +73,7 @@ opsconsole -v;
 ## Local Installation
 ```bash
 # Clone this package
-git clone https://github.com/tinystacks/opsconsole.git;
+git clone https://github.com/tinystacks/ops-console.git;
 
 # Install dependencies and build
 npm i; npm run build;
@@ -120,8 +120,10 @@ Starts the ops console by pulling down the docker images for the ops api (public
 |Flag|Arguments|Description|
 |----|---------|-----------|
 |-a, --arch|\<arch\>|  Specifies the architecture. Defaults to 'x86'. Options: 'x86', 'arm'
-|-c, --config-file|\<config-file\>|  Specifies a config file. See the `samples` folder in this repo for sample config files.
-|-V, --verbose||  Displays additional logs
+|-c, --config-file|\<config-file\>|  Specifies a config file. See the `samples` folder in this repo for sample config files. Looks for config.yml in the current working directory by default.
+|-V, --verbose||  Displays additional logs.
+|-b, --backend-port|\<backend-port\>| Specifies the port to be exposed by the backend service. Defaults to port 8000.
+|-f, --frontend-port|\<frontend-port\>| Specifies the port to be exposed by the frontend service. Defaults to port 3000.
 |-h, --help||             display help for this command
 
 ## Sample dashboards

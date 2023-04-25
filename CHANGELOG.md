@@ -1,3 +1,12 @@
+v0.0.21
+---
+- Add update command to update cli to latest version
+- Make verbose flag global for all commands
+ 
+v0.0.20
+---
+- Small documentation cleanup
+ 
 v0.0.19
 ---
 - Removed unused parameter
