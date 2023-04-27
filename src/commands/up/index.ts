@@ -43,10 +43,11 @@ function validateArchitecture (arch: string) {
 
 async function validatePorts (backendPort: number, frontendPort: number) {
   const portsInUse: number[] = [];
-  const backendPortIsAvailble = await isPortAvailable(backendPort);
-  const frontendPortIsAvailable = await isPortAvailable(frontendPort);
-  if (!backendPortIsAvailble) portsInUse.push(backendPort);
-  if (!frontendPortIsAvailable) portsInUse.push(frontendPort);
+  for (const port of [ backendPort, frontendPort ]) {
+    if (!(await isPortAvailable(port))) {
+      portsInUse.push(port);
+    }
+  }
   if (portsInUse.length) {
     logAndThrow(`The following port(s) are not available: ${portsInUse.join(', ')}`);
   }
@@ -208,8 +209,8 @@ async function up (options: UpOptions) {
     setProcessCleanupHandler(backendProcess, frontendProcess);
     logger.info('This may take a moment.');
   } catch (e) {
-    const verboseHint = process.env.VERBOSE === 'true' ? '' : ' To debug, please run with the -V, --verbose flag';
-    logger.error(`ops-cli up failed!${verboseHint}`, e);
+    const verboseHint = process.env.VERBOSE === 'true' ? '' : ' To debug further, please run with the -V, --verbose flag';
+    logger.error(`opsconsole up failed!${verboseHint}`, e);
   }
 }
 

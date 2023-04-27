@@ -26,7 +26,7 @@ try {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { version } = require('../package.json');
   program
-    .name('ops-cli')
+    .name('opsconsole')
     .version(version, '-v, --version')
     .description('TinyStacks opsconsole command line interface')
     .option('-V, --verbose', 'Displays additional logs.');
