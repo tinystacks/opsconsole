@@ -1,3 +1,7 @@
+v0.0.22
+---
+- Renamed from ops-cli to opsconsole
+ 
 v0.0.21
 ---
 - Add update command to update cli to latest version
