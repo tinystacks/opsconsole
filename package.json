@@ -63,7 +63,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.303.0",
     "@tinystacks/ops-core": "^0.0.3",
-    "@tinystacks/ops-model": "^0.0.1",
+    "@tinystacks/ops-model": "^0.2.0",
     "@tinystacks/ops-stack-client": "^1.0.3",
     "colors": "^1.4.0",
     "commander": "^10.0.0",

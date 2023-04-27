@@ -33,6 +33,7 @@ try {
 
   program.command('init')
     .description('Creates a template file from the example shown in the README')
+    .option('-t, --template <template-file>', 'Specifies a template config file path. Will prompt for template constants and create a new config file in the current working directory.')
     .action(init);
 
   program.command('up')
