@@ -46,7 +46,7 @@ describe('update', () => {
     expect(mockRunCommandSync).toBeCalledTimes(2);
     expect(mockStop).toBeCalled();
     expect(mockLoggerSucces).toBeCalled();
-    expect(mockLoggerSucces).toBeCalledWith('Successfully updated ops-cli to version latest!');
+    expect(mockLoggerSucces).toBeCalledWith('Successfully updated opsconsole to version latest!');
   });
   it('logs error on non-zero exit code', async () => {
     mockRunCommandSync.mockResolvedValueOnce({ exitCode: 1 });
@@ -58,7 +58,7 @@ describe('update', () => {
     expect(mockRunCommandSync).toBeCalledTimes(1);
     expect(mockStop).toBeCalled();
     expect(mockLoggerError).toBeCalled();
-    expect(mockLoggerError).toBeCalledWith('Failed to update ops-cli!');
+    expect(mockLoggerError).toBeCalledWith('Failed to update opsconsole!');
   });
   it('logs success if update succeeds but list fails', async () => {
     mockRunCommandSync.mockResolvedValueOnce({ exitCode: 0 });
@@ -71,7 +71,7 @@ describe('update', () => {
     expect(mockRunCommandSync).toBeCalledTimes(2);
     expect(mockStop).toBeCalled();
     expect(mockLoggerSucces).toBeCalled();
-    expect(mockLoggerSucces).toBeCalledWith('Successfully updated ops-cli!');
+    expect(mockLoggerSucces).toBeCalledWith('Successfully updated opsconsole!');
   });
   it('logs new version when update and list succeed', async () => {
     mockRunCommandSync.mockResolvedValueOnce({ exitCode: 0 });
@@ -88,12 +88,12 @@ describe('update', () => {
     expect(mockStart).toBeCalled();
 
     expect(mockRunCommandSync).toBeCalledTimes(2);
-    expect(mockRunCommandSync).toBeCalledWith('npm i -g @tinystacks/ops-cli@latest');
-    expect(mockRunCommandSync).toBeCalledWith('npm list -g @tinystacks/ops-cli');
+    expect(mockRunCommandSync).toBeCalledWith('npm i -g @tinystacks/opsconsole@latest');
+    expect(mockRunCommandSync).toBeCalledWith('npm list -g @tinystacks/opsconsole');
     
     expect(mockStop).toBeCalled();
     
     expect(mockLoggerSucces).toBeCalled();
-    expect(mockLoggerSucces).toBeCalledWith('Successfully updated ops-cli!');
+    expect(mockLoggerSucces).toBeCalledWith('Successfully updated opsconsole!');
   });
 });
