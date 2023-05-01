@@ -51,18 +51,16 @@ async function promptForConstants (config: YamlConsole): Promise<YamlConsole> {
   const {
     constants = {}
   } = config;
-
   for (const [key, value] of Object.entries(constants)) {
     const prompt = makePrompt(value, key);
     const userInput = await prompts(prompt);
-    console.debug('userInput: ', userInput);
     constants[key].value = userInput[key];
   }
   config.constants = constants;
   return config;
 }
 
-async function init (options: InitOptions) {
+async function init (options: InitOptions = {}) {
   try {
     const {
       template: inputTemplate
@@ -73,12 +71,12 @@ async function init (options: InitOptions) {
     const configContents = fs.readFileSync(configFilePath)?.toString();
     const configJson = (yaml.load(configContents) as any)?.Console as YamlConsole;
     const updatedConfigJson: YamlConsole = await promptForConstants(configJson);
-    const updatedConfigYaml = yaml.dump(updatedConfigJson);
+    const updatedConfigYaml = yaml.dump({ Console: updatedConfigJson });
     const destFilePath = `./${DEFAULT_CONFIG_FILENAME}`;
     fs.writeFileSync(destFilePath, updatedConfigYaml);
-    logger.success('Config yaml successfully created from template!');
+    logger.success(`Successfully initialized config file from template ${path.basename(template)}!`);
   } catch (e) {
-    logger.error(`Error creating example config file: ${e}`);
+    logger.error(`Error initializing config file: ${e}`);
   }
 }
 

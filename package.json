@@ -30,7 +30,7 @@
     "setup-test-lint": "node ./scripts/setup-test-lint.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test-cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
-    "test-file": "NODE_OPTIONS=--experimental-vm-modules jest ./test/commands/update.test.ts",
+    "test-file": "NODE_OPTIONS=--experimental-vm-modules jest ./test/commands/init.test.ts",
     "test-file-cov": "NODE_OPTIONS=--experimental-vm-modules jest ./test/utils/os.test.ts --coverage",
     "view-test-cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage || true && open coverage/lcov-report/index.html",
     "prepare": "husky install"
