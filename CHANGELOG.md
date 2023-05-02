@@ -1,3 +1,7 @@
+v0.0.24
+---
+- readme fixes
+ 
 v0.0.23
 ---
 - Update @tinystacks/ops-stack-client
