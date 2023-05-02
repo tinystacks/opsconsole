@@ -1,3 +1,7 @@
+v0.0.23
+---
+- Update @tinystacks/ops-stack-client
+ 
 v0.0.22
 ---
 - Renamed from ops-cli to opsconsole
