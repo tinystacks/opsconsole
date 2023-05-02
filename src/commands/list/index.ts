@@ -9,7 +9,7 @@ async function list (options: GetOptions = {}) {
     } = options;
     const { apiKey } = getCredentials();
     const opsStackClient = getClient(apiKey);
-    const response = await opsStackClient.allocate.getOpsStack(consoleName);
+    const response = await opsStackClient.allocate.getOpsStacks(consoleName);
     logger.stdout(JSON.stringify(response, null, 2));
   } catch (error) {
     logger.error(`Error listing ops consoles: ${error}`);

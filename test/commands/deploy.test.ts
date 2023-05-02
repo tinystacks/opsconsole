@@ -4,7 +4,7 @@ const mockLoggerStdout = jest.fn();
 const mockLoggerSuccess = jest.fn();
 const mockResolve = jest.fn();
 const mockParseConfig = jest.fn();
-const mockGetOpsStack = jest.fn();
+const mockGetOpsStacks = jest.fn();
 const mockCreateOpsStack = jest.fn();
 const mockUpdateOpsStack = jest.fn();
 const mockGetCredentials = jest.fn();
@@ -67,7 +67,7 @@ const mockSpinner = {
 
 const mockOpsStackApiClient = {
   allocate: {
-    getOpsStack: mockGetOpsStack,
+    getOpsStacks: mockGetOpsStacks,
     createOpsStack: mockCreateOpsStack,
     updateOpsStack: mockUpdateOpsStack
   }
@@ -90,8 +90,8 @@ describe('deploy', () => {
     mockResolve.mockImplementationOnce((filePath: string) => filePath);
     mockReadFileSync.mockReturnValueOnce(mockConfigYaml);
     mockParseConfig.mockResolvedValueOnce(mockConfigJson);
-    mockGetOpsStack.mockRejectedValueOnce({ status: 404 });
-    mockGetOpsStack.mockResolvedValueOnce([{ ...mockOpsStack, status: 'In Sync' }]);
+    mockGetOpsStacks.mockRejectedValueOnce({ status: 404 });
+    mockGetOpsStacks.mockResolvedValueOnce([{ ...mockOpsStack, status: 'In Sync' }]);
     mockCreateOpsStack.mockResolvedValueOnce(mockOpsStack);
 
     await deploy({ configFile: 'index.yml' });
@@ -107,8 +107,8 @@ describe('deploy', () => {
 
     expect(mockGetClient).toBeCalled();
 
-    expect(mockGetOpsStack).toBeCalled();
-    expect(mockGetOpsStack).toBeCalledTimes(2);
+    expect(mockGetOpsStacks).toBeCalled();
+    expect(mockGetOpsStacks).toBeCalledTimes(2);
 
     expect(mockCreateOpsStack).toBeCalled();
     expect(mockCreateOpsStack).toBeCalledWith(mockConfigYaml);
@@ -133,8 +133,8 @@ describe('deploy', () => {
     mockResolve.mockImplementationOnce((filePath: string) => filePath);
     mockReadFileSync.mockReturnValueOnce(mockConfigYaml);
     mockParseConfig.mockResolvedValueOnce(mockConfigJson);
-    mockGetOpsStack.mockResolvedValueOnce([mockOpsStack]);
-    mockGetOpsStack.mockResolvedValueOnce([{ ...mockOpsStack, status: 'In Sync' }]);
+    mockGetOpsStacks.mockResolvedValueOnce([mockOpsStack]);
+    mockGetOpsStacks.mockResolvedValueOnce([{ ...mockOpsStack, status: 'In Sync' }]);
     mockUpdateOpsStack.mockResolvedValueOnce(mockOpsStack);
 
     await deploy({});
@@ -195,7 +195,7 @@ describe('deploy', () => {
     mockResolve.mockImplementationOnce((filePath: string) => filePath);
     mockReadFileSync.mockReturnValueOnce(mockConfigYaml);
     mockParseConfig.mockResolvedValueOnce(mockConfigJson);
-    mockGetOpsStack.mockRejectedValueOnce({ status: 404 });
+    mockGetOpsStacks.mockRejectedValueOnce({ status: 404 });
     mockCreateOpsStack.mockResolvedValueOnce(mockError);
 
     await deploy({ configFile: 'index.yml' });
@@ -217,8 +217,8 @@ describe('deploy', () => {
 
     expect(mockGetClient).toBeCalled();
 
-    expect(mockGetOpsStack).toBeCalled();
-    expect(mockGetOpsStack).toBeCalledTimes(1);
+    expect(mockGetOpsStacks).toBeCalled();
+    expect(mockGetOpsStacks).toBeCalledTimes(1);
 
     expect(mockStart).toBeCalled();
 
@@ -234,8 +234,8 @@ describe('deploy', () => {
     mockResolve.mockImplementationOnce((filePath: string) => filePath);
     mockReadFileSync.mockReturnValueOnce(mockConfigYaml);
     mockParseConfig.mockResolvedValueOnce(mockConfigJson);
-    mockGetOpsStack.mockRejectedValueOnce({ status: 404 });
-    mockGetOpsStack.mockResolvedValueOnce([{ ...mockOpsStack, status: 'Sync Failed' }]);
+    mockGetOpsStacks.mockRejectedValueOnce({ status: 404 });
+    mockGetOpsStacks.mockResolvedValueOnce([{ ...mockOpsStack, status: 'Sync Failed' }]);
     mockCreateOpsStack.mockResolvedValueOnce(mockOpsStack);
 
     await deploy({ configFile: 'index.yml' });
@@ -251,8 +251,8 @@ describe('deploy', () => {
 
     expect(mockGetClient).toBeCalled();
 
-    expect(mockGetOpsStack).toBeCalled();
-    expect(mockGetOpsStack).toBeCalledTimes(2);
+    expect(mockGetOpsStacks).toBeCalled();
+    expect(mockGetOpsStacks).toBeCalledTimes(2);
 
     expect(mockCreateOpsStack).toBeCalled();
     expect(mockCreateOpsStack).toBeCalledWith(mockConfigYaml);
@@ -274,8 +274,8 @@ describe('deploy', () => {
     mockResolve.mockImplementationOnce((filePath: string) => filePath);
     mockReadFileSync.mockReturnValueOnce(mockConfigYaml);
     mockParseConfig.mockResolvedValueOnce(mockConfigJson);
-    mockGetOpsStack.mockRejectedValueOnce({ status: 404 });
-    mockGetOpsStack.mockRejectedValueOnce(mockError);
+    mockGetOpsStacks.mockRejectedValueOnce({ status: 404 });
+    mockGetOpsStacks.mockRejectedValueOnce(mockError);
     mockCreateOpsStack.mockResolvedValueOnce(mockOpsStack);
 
     await deploy({ configFile: 'index.yml' });
@@ -291,8 +291,8 @@ describe('deploy', () => {
 
     expect(mockGetClient).toBeCalled();
 
-    expect(mockGetOpsStack).toBeCalled();
-    expect(mockGetOpsStack).toBeCalledTimes(2);
+    expect(mockGetOpsStacks).toBeCalled();
+    expect(mockGetOpsStacks).toBeCalledTimes(2);
 
     expect(mockCreateOpsStack).toBeCalled();
     expect(mockCreateOpsStack).toBeCalledWith(mockConfigYaml);
