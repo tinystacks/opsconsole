@@ -12,7 +12,7 @@ import { sleep } from '../../utils/os';
 
 async function checkIfConsoleExists (consoleName: string, opsStackClient: OpsStackApiClient): Promise<boolean | never> {
   try {
-    const consoleStacks = await opsStackClient.allocate.getOpsStack(consoleName);
+    const consoleStacks = await opsStackClient.allocate.getOpsStacks(consoleName);
     const [consoleStack] = consoleStacks || [];
     if (consoleStack && consoleStack.name === consoleName) return true;
     throw consoleStack;
@@ -30,7 +30,7 @@ async function waitForStackToSync (opsStackClient: OpsStackApiClient, consoleNam
   const tenSeconds = 10 * 1000;
   await sleep(tenSeconds);
   
-  const consoleStacks = await opsStackClient.allocate.getOpsStack(consoleName);
+  const consoleStacks = await opsStackClient.allocate.getOpsStacks(consoleName);
   const [consoleStack] = consoleStacks || [];
   if (consoleStack && consoleStack.name === consoleName) {
     if (consoleStack.status === Status.IN_SYNC) {

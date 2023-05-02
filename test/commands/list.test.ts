@@ -1,6 +1,6 @@
 const mockLoggerError = jest.fn();
 const mockLoggerStdout = jest.fn();
-const mockGetOpsStack = jest.fn();
+const mockGetOpsStacks = jest.fn();
 const mockGetCredentials = jest.fn();
 const mockGetClient = jest.fn();
 
@@ -18,7 +18,7 @@ import { list } from '../../src/commands/list';
 
 const mockOpsStackClient = {
   allocate: {
-    getOpsStack: mockGetOpsStack
+    getOpsStacks: mockGetOpsStacks
   }
 };
 
@@ -32,9 +32,9 @@ describe('list', () => {
     // for spies
     jest.restoreAllMocks();
   });
-  it('pulls credentials from local private file and calls getOpsStack through the client', async () => {
+  it('pulls credentials from local private file and calls getOpsStacks through the client', async () => {
     mockGetCredentials.mockReturnValue('{ "apiKey": "mock-api-key" }');
-    mockGetOpsStack.mockResolvedValue({ name: 'console' });
+    mockGetOpsStacks.mockResolvedValue({ name: 'console' });
 
     await list();
 
@@ -42,14 +42,14 @@ describe('list', () => {
 
     expect(mockGetClient).toBeCalled();
 
-    expect(mockGetOpsStack).toBeCalled();
+    expect(mockGetOpsStacks).toBeCalled();
 
     expect(mockLoggerStdout).toBeCalled();
     expect(mockLoggerStdout).toBeCalledWith("{\n  \"name\": \"console\"\n}");
   });
   it('throws an error if credentials are not found', async () => {
     mockGetCredentials.mockReturnValue('{ "apiKey": "mock-api-key" }');
-    mockGetOpsStack.mockResolvedValue({ name: 'console' });
+    mockGetOpsStacks.mockResolvedValue({ name: 'console' });
 
     await list();
 
@@ -57,7 +57,7 @@ describe('list', () => {
 
     expect(mockGetClient).toBeCalled();
 
-    expect(mockGetOpsStack).toBeCalled();
+    expect(mockGetOpsStacks).toBeCalled();
 
     expect(mockLoggerStdout).toBeCalled();
     expect(mockLoggerStdout).toBeCalledWith("{\n  \"name\": \"console\"\n}");
@@ -71,7 +71,7 @@ describe('list', () => {
     expect(mockGetCredentials).toBeCalled();
 
     expect(mockGetClient).not.toBeCalled();
-    expect(mockGetOpsStack).not.toBeCalled();
+    expect(mockGetOpsStacks).not.toBeCalled();
     expect(mockLoggerStdout).not.toBeCalled();
 
     expect(mockLoggerError).toBeCalled();
