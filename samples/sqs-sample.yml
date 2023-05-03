@@ -1,0 +1,371 @@
+Console:
+  name: sqs-dashboard
+  constants:
+    region:
+      value: us-east-1
+    queueName:
+      value: test
+    deadLetterQueueName:
+      value: test-dead-letter
+    profileName:
+      value: default
+      description: AWS profile name
+  providers:
+    AwsCredentialsProvider:
+      id: AwsCredentialsProvider
+      type: AwsCredentialsProvider
+      credentials:
+        profile: $const.profileName
+  dashboards:
+    Main:
+      route: main
+      id: Main
+      widgets:
+        - $ref: '#/Console/widgets/MainQueueMetrics'
+        - $ref: '#/Console/widgets/MainQueue'
+        - $ref: '#/Console/widgets/DeadLetterQueueMetrics'
+        - $ref: '#/Console/widgets/DeadLetterQueue'
+  widgets:
+    MainQueueMetrics:
+      type: Grid
+      displayName: SQS Metrics
+      columns: 2
+      children:
+        - $ref: '#/Console/widgets/QueueDepth'
+        - $ref: '#/Console/widgets/MessageAge'
+        - $ref: '#/Console/widgets/MessageCount'
+    QueueDepth:
+      type: AwsCloudWatchMetricGraph
+      displayName: Queue Depth
+      region: $const.region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/SQS
+          metricName: ApproximateNumberOfMessagesVisible
+          metricDisplayName: 'Queue Depth'
+          statistic: Maximum
+          dimensions:
+            - key: QueueName
+              value: $const.queueName
+    MessageAge:
+      type: AwsCloudWatchMetricGraph
+      displayName: Age of Oldest Message
+      region: $const.region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/SQS
+          metricName: ApproximateAgeOfOldestMessage
+          metricDisplayName: 'Age of Oldest Message'
+          statistic: Maximum
+          dimensions:
+            - key: QueueName
+              value: $const.queueName
+    MessageCount:
+      type: AwsCloudWatchMetricGraph
+      displayName: Total Messages Received
+      region: $const.region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/SQS
+          metricName: NumberOfMessagesReceived
+          metricDisplayName: 'Total Messages Received'
+          statistic: Sum
+          dimensions:
+            - key: QueueName
+              value: $const.queueName
+    MainQueue:
+      id: MainQueue
+      type: Tabs
+      displayName: Main SQS Queue Commands
+      tabNames:
+        - List Message Ids
+        - Receive One Message
+        - Send Message
+        - Purge Queue
+        - Forward To Dead Letter Queue
+        - Queue Policy
+      children:
+        - $ref: '#/Console/widgets/ListMessages'
+        - $ref: '#/Console/widgets/ReceiveMessage'
+        - $ref: '#/Console/widgets/SendMessage'
+        - $ref: '#/Console/widgets/PurgeQueue'
+        - $ref: '#/Console/widgets/ForwardToDeadLetter'
+        - $ref: '#/Console/widgets/GetQueuePolicy'
+    PurgeQueue:
+      id: PurgeQueue
+      type: Cli
+      displayName: Purge Queue
+      command: |
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        aws sqs purge-queue --queue-url $queueUrl;
+        if [ "$?" != "0" ]; then echo "Purge queue failed!" && exit 1; fi;
+        echo "Purge queue successful";
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.queueName
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    ReceiveMessage:
+      id: ReceiveMessage
+      type: Cli
+      displayName: Receive One Message
+      command: |
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        aws sqs receive-message --queue-url $queueUrl;
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.queueName
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    ListMessages:
+      id: ListMessages
+      type: Cli
+      displayName: List Message Ids
+      command: |
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        messages=$(aws sqs receive-message --queue-url $queueUrl --max-number-of-messages 10 --wait-time-seconds 1);
+        messageIds=$(jq -r .Messages[].MessageId <<< $messages);
+        if [[ -z "$messageIds" ]]; then messageIds="[]"; fi;
+        echo $messageIds;
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.queueName
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    SendMessage:
+      id: SendMessage
+      type: Cli
+      displayName: Send Message
+      command: |
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        aws sqs send-message --queue-url $queueUrl --message-body "$MESSAGE_BODY";
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.queueName
+        MESSAGE_BODY: '{ "message": "Hello World!" }'
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    ForwardToDeadLetter:
+      id: ForwardToDeadLetter
+      type: Cli
+      displayName: Forward To Dead Letter
+      ## Manually copies a message to the specified Dead Letter Queue and deletes the original message
+      ## WARNING: MessageId will differ! MD5OfBody will be the only matching attribute if restored!
+      command: |
+        echo start;
+        dlRes=$(aws sqs get-queue-url --queue-name $DL_QUEUE_NAME);
+        dlQueueUrl=$(jq -r .QueueUrl <<< $dlRes);
+        dlqForward=$(aws sqs send-message --queue-url $dlQueueUrl --message-body "$MESSAGE_BODY");
+        if [ "$?" != "0" ]; then echo "Forward to dead letter queue failed!" && exit 1; fi;
+        echo "Dead letter forwarding successful.";
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        deleteRes=$(aws sqs delete-message --queue-url $queueUrl --receipt-handle "$MESSAGE_RECEIPT_HANDLE");
+        if [ "$?" != "0" ]; then echo "Failed to delete message!" && exit 1; fi;
+        echo "Delete message successful.";
+        echo end;
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.queueName
+        DL_QUEUE_NAME: $const.deadLetterQueueName
+        MESSAGE_BODY: '{ "message": "Hello World!" }'
+        MESSAGE_RECEIPT_HANDLE: ''
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    GetQueuePolicy:
+      id: GetQueuePolicy
+      type: Cli
+      displayName: Queue Policy
+      command: |
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        attributes=$(aws sqs get-queue-attributes --queue-url $queueUrl --attribute-names Policy);
+        jq '.Attributes.Policy | fromjson' --indent 2 <<< $attributes;
+      runOnStart: true
+      environmentVariables:
+        QUEUE_NAME: $const.queueName
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    DeadLetterQueueMetrics:
+      type: Grid
+      displayName: Dead Letter Queue Metrics
+      columns: 2
+      children:
+        - $ref: '#/Console/widgets/DeadLetterQueueDepth'
+        - $ref: '#/Console/widgets/DeadLetterMessageAge'
+        - $ref: '#/Console/widgets/DeadLetterMessageCount'
+    DeadLetterQueueDepth:
+      type: AwsCloudWatchMetricGraph
+      displayName: Dead Letter Queue Depth
+      region: $const.region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/SQS
+          metricName: ApproximateNumberOfMessagesVisible
+          metricDisplayName: 'Queue Depth'
+          statistic: Sum
+          dimensions:
+            - key: QueueName
+              value: $const.deadLetterQueueName
+    DeadLetterMessageAge:
+      type: AwsCloudWatchMetricGraph
+      displayName: Age of Oldest Dead Letter
+      region: $const.region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/SQS
+          metricName: ApproximateAgeOfOldestMessage
+          metricDisplayName: 'Age of Oldest Message'
+          statistic: Maximum
+          dimensions:
+            - key: QueueName
+              value: $const.deadLetterQueueName
+    DeadLetterMessageCount:
+      type: AwsCloudWatchMetricGraph
+      displayName: Total Dead Letters Received
+      region: $const.region
+      period: 300
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      timeRange:
+        time: 1
+        unit: h
+      metrics:
+        - metricNamespace: AWS/SQS
+          metricName: NumberOfMessagesReceived
+          metricDisplayName: 'Total Messages Received'
+          statistic: Sum
+          dimensions:
+            - key: QueueName
+              value: $const.deadLetterQueueName
+    
+    DeadLetterQueue:
+      id: DeadLetterQueue
+      type: Tabs
+      displayName: Dead Letter Queue Commands
+      tabNames:
+        - List Dead Letters
+        - Receive Dead Letter
+        - Restore Message
+        - Purge Dead Letter Queue
+      children:
+        - $ref: '#/Console/widgets/ListDeadLetters'
+        - $ref: '#/Console/widgets/ReceiveDeadLetter'
+        - $ref: '#/Console/widgets/RestoreToMainQueue'
+        - $ref: '#/Console/widgets/PurgeDeadLetterQueue'
+    PurgeDeadLetterQueue:
+      id: PurgeDeadLetterQueue
+      type: Cli
+      displayName: Purge Dead Letter Queue
+      command: |
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        aws sqs purge-queue --queue-url $queueUrl;
+        if [ "$?" != "0" ]; then echo "Purge dead letter queue failed!" && exit 1; fi;
+        echo "Purge dead letter queue successful";
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.deadLetterQueueName
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    ReceiveDeadLetter:
+      id: ReceiveDeadLetter
+      type: Cli
+      displayName: Receive Dead Letter
+      command: |
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        aws sqs receive-message --queue-url $queueUrl;
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.deadLetterQueueName
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    ListDeadLetters:
+      id: List Dead Letters
+      type: Cli
+      displayName: List Dead Letters
+      command: |
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        messages=$(aws sqs receive-message --queue-url $queueUrl --max-number-of-messages 10 --wait-time-seconds 1);
+        messageIds=$(jq .Messages[].MessageId <<< $messages);
+        if [[ -z "$messageIds" ]]; then messageIds="[]"; fi;
+        echo $messageIds;
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.deadLetterQueueName
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+    RestoreToMainQueue:
+      id: RestoreToMainQueue
+      type: Cli
+      displayName: Restore To Main Queue
+      ## Manually copies a message from the Dead Letter Queue to the Main queue and deletes the dead letter
+      ## WARNING: MessageId will differ! MD5OfBody will be the only matching attribute other than the message body!
+      command: |
+        echo start;
+        res=$(aws sqs get-queue-url --queue-name $QUEUE_NAME);
+        queueUrl=$(jq -r .QueueUrl <<< $res);
+        restore=$(aws sqs send-message --queue-url $queueUrl --message-body "$MESSAGE_BODY");
+        if [ "$?" != 0 ]; then echo "Message restore FAILED!" && exit 1; fi;
+        echo "Message restore successful.";
+        dlRes=$(aws sqs get-queue-url --queue-name $DL_QUEUE_NAME);
+        dlQueueUrl=$(jq -r .QueueUrl <<< $dlRes);
+        deleteDeadLetter=$(aws sqs delete-message --queue-url $dlQueueUrl --receipt-handle "$MESSAGE_RECEIPT_HANDLE");
+        if [ "$?" != "0" ]; then echo "Failed to delete dead letter!" && exit 1; fi;
+        echo "Delete dead letter successful.";
+        echo end;
+      runOnStart: false
+      environmentVariables:
+        QUEUE_NAME: $const.queueName
+        DL_QUEUE_NAME: $const.deadLetterQueueName
+        MESSAGE_BODY: '{ "message": "Hello World!" }'
+        MESSAGE_RECEIPT_HANDLE: ''
+      providers:
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+      children: []
+  dependencies:
+    AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-widgets'
+    AwsCredentialsProvider: '@tinystacks/ops-aws-core-widgets'
+    Cli: '@tinystacks/ops-core-widgets'
+    Grid: '@tinystacks/ops-core-widgets'
+    Tabs: '@tinystacks/ops-core-widgets'
