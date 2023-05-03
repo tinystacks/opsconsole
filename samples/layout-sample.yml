@@ -37,7 +37,7 @@ Console:
       type: Markdown
       displayName: Small Markdown Window
       text: Well well well what we've got here is some downright straightforward markdown
-      markdown: >
+      markdown: |
         ### This is fully supported markdown
 
         ```
@@ -46,13 +46,13 @@ Console:
     Md1:
       type: Markdown
       displayName: Tiny Markdown 1
-      markdown: >
+      markdown: |
         Just one small markdown window.
         You can stack these in tabs
     Md2:
       type: Markdown
       displayName: Tiny Markdown 2
-      markdown: >
+      markdown: |
         More markdown. You can also keep widgets in panels. 
 
   dependencies:

@@ -1,1 +1,1 @@
-
+- Add `--template` flag to allow initializing a new config file based on another.  This process will prompt the user for values for any constants in the template.
