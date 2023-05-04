@@ -1,3 +1,7 @@
+v0.0.27
+---
+- readme updates
+ 
 v0.0.26
 ---
 - SQS sample dashboard
