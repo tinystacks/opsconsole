@@ -1,3 +1,7 @@
+v0.0.31
+---
+- revert creds in aws sample
+ 
 v0.0.30
 ---
 - removed dead COPY from Docker files
