@@ -23,6 +23,7 @@ const mockValidateDependencies = jest.fn();
 const mockGetOpen = jest.fn();
 const mockOpen = jest.fn();
 const mockIsPortAvailable = jest.fn();
+const mockValidateCwdPermissions = jest.fn();
 
 jest.mock('path', () => ({
   ...jest.requireActual('path'),
@@ -50,7 +51,8 @@ jest.mock('../../src/utils/os', () => ({
   streamToFile: mockStreamToFile,
   editDockerFile: mockEditDockerFile,
   logAndThrow: mockLogAndThrow,
-  isPortAvailable: mockIsPortAvailable
+  isPortAvailable: mockIsPortAvailable,
+  validateCwdPermissions: mockValidateCwdPermissions
 }));
 
 jest.mock('../../src/utils/config', () => ({
@@ -189,6 +191,7 @@ describe('up', () => {
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     mockValidateDependencies.mockResolvedValue(undefined);
+    mockValidateCwdPermissions.mockReturnValue(undefined);
     mockGetObject.mockResolvedValue({ Body: '' });
     const logAndThrowError = new Error('Error');
     mockLogAndThrow.mockImplementation(() => { throw logAndThrowError });
@@ -234,6 +237,7 @@ describe('up', () => {
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     mockValidateDependencies.mockResolvedValue(undefined);
+    mockValidateCwdPermissions.mockReturnValue(undefined);
     mockGetObject.mockResolvedValue({ Body: '' });
     mockRunCommandSync.mockResolvedValueOnce({
       exitCode: 0,
@@ -284,6 +288,7 @@ describe('up', () => {
       mockLoad.mockReturnValue({});
       mockParseConfig.mockReturnValue({ dependencies: {} });
       mockValidateDependencies.mockResolvedValueOnce(undefined);
+      mockValidateCwdPermissions.mockReturnValue(undefined);
       mockGetObject.mockResolvedValue({ Body: '' });
       mockRunCommandSync.mockResolvedValueOnce({
         exitCode: 0,
@@ -321,6 +326,7 @@ describe('up', () => {
       mockLoad.mockReturnValue({});
       mockParseConfig.mockReturnValue({ dependencies: {} });
       mockValidateDependencies.mockResolvedValueOnce(undefined);
+      mockValidateCwdPermissions.mockReturnValue(undefined);
       mockGetObject.mockResolvedValue({ Body: '' });
       mockRunCommandSync.mockResolvedValueOnce({
         exitCode: 0,
@@ -358,6 +364,7 @@ describe('up', () => {
       mockLoad.mockReturnValue({});
       mockParseConfig.mockResolvedValue({ dependencies: {} });
       mockValidateDependencies.mockResolvedValue(undefined);
+      mockValidateCwdPermissions.mockReturnValue(undefined);
       mockGetObject.mockResolvedValue({ Body: '' });
       mockRunCommandSync.mockResolvedValueOnce({
         exitCode: 0,
@@ -395,6 +402,7 @@ describe('up', () => {
       mockLoad.mockReturnValue({});
       mockParseConfig.mockResolvedValue({ dependencies: {} });
       mockValidateDependencies.mockResolvedValue(undefined);
+      mockValidateCwdPermissions.mockReturnValue(undefined);
       mockGetObject.mockResolvedValue({ Body: '' });
       mockRunCommandSync.mockReturnValueOnce({
         exitCode: 0,
@@ -432,6 +440,7 @@ describe('up', () => {
       mockLoad.mockReturnValue({});
       mockParseConfig.mockResolvedValue({ dependencies: {} });
       mockValidateDependencies.mockResolvedValue(undefined);
+      mockValidateCwdPermissions.mockReturnValue(undefined);
       mockGetObject.mockResolvedValue({ Body: '' });
       mockRunCommandSync.mockResolvedValueOnce({
         exitCode: 0,
@@ -471,6 +480,7 @@ describe('up', () => {
       mockLogAndThrow.mockImplementation(() => { throw logAndThrowError });
       mockParseConfig.mockReturnValue({ dependencies: {} });
       mockValidateDependencies.mockResolvedValue(undefined);
+      mockValidateCwdPermissions.mockReturnValue(undefined);
       mockGetObject.mockResolvedValue({ Body: '' });
       mockRunCommandSync.mockResolvedValueOnce({
         exitCode: 0,
@@ -510,6 +520,7 @@ describe('up', () => {
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     mockValidateDependencies.mockResolvedValue(undefined);
+    mockValidateCwdPermissions.mockReturnValue(undefined);
     mockGetObject.mockResolvedValue({ Body: '' });
     mockRunCommandSync.mockResolvedValueOnce({
       exitCode: 0,
@@ -565,6 +576,7 @@ describe('up', () => {
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     mockValidateDependencies.mockResolvedValue(undefined);
+    mockValidateCwdPermissions.mockReturnValue(undefined);
     mockGetObject.mockResolvedValue({ Body: '' });
     mockRunCommandSync.mockResolvedValueOnce({
       exitCode: 0,
@@ -614,6 +626,7 @@ describe('up', () => {
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     mockValidateDependencies.mockResolvedValue(undefined);
+    mockValidateCwdPermissions.mockReturnValue(undefined);
     mockGetObject.mockResolvedValue({ Body: '' });
     mockRunCommandSync.mockResolvedValueOnce({
       exitCode: 0,
@@ -663,6 +676,7 @@ describe('up', () => {
     mockLoad.mockReturnValue({});
     mockParseConfig.mockResolvedValue({ dependencies: {} });
     mockValidateDependencies.mockResolvedValue(undefined);
+    mockValidateCwdPermissions.mockReturnValue(undefined);
     mockGetObject.mockResolvedValue({ Body: '' });
     mockRunCommandSync.mockResolvedValueOnce({
       exitCode: 0,

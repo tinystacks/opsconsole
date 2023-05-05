@@ -1,1 +1,1 @@
-
+- added read/write permissions validation to cwd so Docker files can be written
