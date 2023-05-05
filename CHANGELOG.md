@@ -1,3 +1,7 @@
+v0.0.32
+---
+Add readme vid
+ 
 v0.0.31
 ---
 - revert creds in aws sample
