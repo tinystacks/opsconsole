@@ -4,7 +4,7 @@ import { S3 } from '@aws-sdk/client-s3';
 import { ChildProcess } from 'child_process';
 import isNil from 'lodash.isnil';
 import logger from '../../logger';
-import { isPortAvailable, logAndThrow, replaceFromInDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
+import { isPortAvailable, logAndThrow, editDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
 import { ImageArchitecture, UpOptions } from '../../types';
 import { DEFAULT_CONFIG_FILENAME, Platform, SEP } from '../../constants';
 import { parseConfig, validateDependencies } from '../../utils/config';
@@ -79,13 +79,13 @@ async function pullDockerFiles (tag: string) {
     Key: 'Dockerfile.api'
   });
   await streamToFile(apiRes.Body, Platform.ApiFilePath);
-  replaceFromInDockerFile(Platform.ApiFilePath, tag);
+  editDockerFile(Platform.ApiFilePath, tag);
   const uiRes = await s3Client.getObject({
     Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
     Key: 'Dockerfile.ui'
   });
   await streamToFile(uiRes.Body, Platform.UiFilePath);
-  replaceFromInDockerFile(Platform.UiFilePath, tag);
+  editDockerFile(Platform.UiFilePath, tag);
 }
 
 async function startNetwork () {

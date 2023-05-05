@@ -104,18 +104,19 @@ export async function streamToString (stream: Readable): Promise<string> {
   return Buffer.concat(chunks).toString('utf-8');
 }
 
-export function replaceFromInDockerFile (filePath: string, tag?: string): void {
+export function editDockerFile (filePath: string, tag?: string): void {
   try {
     const filePathParts = filePath.split('.');
     const component = filePathParts[filePathParts.length - 1];
     const file = fs.readFileSync(filePath, 'utf-8');
-    const regEx = new RegExp('^FROM.*');
+    const fromRegEx = new RegExp('^FROM.*');
     let replacedFile: string;
     if (component === 'api') {
-      replacedFile = file.replace(regEx, `FROM ${API_IMAGE_ECR_URL(tag)}`);
+      replacedFile = file.replace(fromRegEx, `FROM ${API_IMAGE_ECR_URL(tag)}`);
     } else if (component === 'ui') {
-      replacedFile = file.replace(regEx, `FROM ${UI_IMAGE_ECR_URL(tag)}`);
+      replacedFile = file.replace(fromRegEx, `FROM ${UI_IMAGE_ECR_URL(tag)}`);
     }
+    replacedFile = replacedFile.replace(/COPY.*/, '');
     fs.writeFileSync(filePath, replacedFile);
   } catch (e) {
     logger.error(`File not found: ${filePath}`);

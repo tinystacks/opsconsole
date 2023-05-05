@@ -46,7 +46,7 @@ import {
 import {
   isPortAvailable,
   logAndThrow,
-  replaceFromInDockerFile,
+  editDockerFile,
   runCommand, runCommandSync, sleep, streamToFile, streamToString
 } from '../../src/utils/os';
 import { Readable } from 'stream';
@@ -274,7 +274,7 @@ describe('os utils', () => {
     });
   });
   
-  describe('replaceFromInDockerFile', () => {
+  describe('editDockerFile', () => {
     const mockPrivateApiDockerfile = `FROM 849087520365.dkr.ecr.us-west-2.amazonaws.com/ops-api:latest-public
 
     ARG DEPENDENCIES
@@ -297,7 +297,7 @@ describe('os utils', () => {
     
     WORKDIR /config
     
-    COPY . .
+    
     
     WORKDIR /app
     
@@ -327,7 +327,7 @@ describe('os utils', () => {
     
     WORKDIR /config
     
-    COPY . .
+    
     
     WORKDIR /app
     
@@ -338,7 +338,7 @@ describe('os utils', () => {
     it('replaces private ops-api base image with public one', async () => {
       mockReadFileSync.mockReturnValue(mockPrivateApiDockerfile);
 
-      await replaceFromInDockerFile('./mockDockerfile.api');
+      await editDockerFile('./mockDockerfile.api');
 
       expect(mockWriteFileSync).toBeCalled();
       expect(mockWriteFileSync).toBeCalledWith('./mockDockerfile.api', mockPublicApiDockerfile);
@@ -346,7 +346,7 @@ describe('os utils', () => {
     it('replaces private ops-frontend base image with public one', async () => {
       mockReadFileSync.mockReturnValue(mockPrivateUiDockerfile);
 
-      await replaceFromInDockerFile('./mockDockerfile.ui', 'arm');
+      await editDockerFile('./mockDockerfile.ui', 'arm');
 
       expect(mockWriteFileSync).toBeCalled();
       expect(mockWriteFileSync).toBeCalledWith('./mockDockerfile.ui', mockPublicUiDockerfile);
@@ -357,7 +357,7 @@ describe('os utils', () => {
 
       let thrownError;
       try {
-        await replaceFromInDockerFile('./mockDockerfile.ui', 'arm');
+        await editDockerFile('./mockDockerfile.ui', 'arm');
       } catch (error) {
         thrownError = error
       } finally {

@@ -15,7 +15,7 @@ const mockGetObject = jest.fn();
 const mockLoad = jest.fn();
 const mockParse = jest.fn();
 const mockStreamToFile = jest.fn();
-const mockReplaceFromInDockerFile = jest.fn();
+const mockEditDockerFile = jest.fn();
 const mockGetConsoleParser = jest.fn();
 const mockLogAndThrow = jest.fn();
 const mockParseConfig = jest.fn();
@@ -48,7 +48,7 @@ jest.mock('../../src/utils/os', () => ({
   runCommandSync: mockRunCommandSync,
   promisifyChildProcess: mockPromisifyChildProcess,
   streamToFile: mockStreamToFile,
-  replaceFromInDockerFile: mockReplaceFromInDockerFile,
+  editDockerFile: mockEditDockerFile,
   logAndThrow: mockLogAndThrow,
   isPortAvailable: mockIsPortAvailable
 }));
@@ -305,10 +305,10 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(2);
 
-      expect(mockReplaceFromInDockerFile).toBeCalled();
-      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
+      expect(mockEditDockerFile).toBeCalled();
+      expect(mockEditDockerFile).toBeCalledTimes(2);
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -342,10 +342,10 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(2);
 
-      expect(mockReplaceFromInDockerFile).toBeCalled();
-      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
+      expect(mockEditDockerFile).toBeCalled();
+      expect(mockEditDockerFile).toBeCalledTimes(2);
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -379,10 +379,10 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(2);
 
-      expect(mockReplaceFromInDockerFile).toBeCalled();
-      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
+      expect(mockEditDockerFile).toBeCalled();
+      expect(mockEditDockerFile).toBeCalledTimes(2);
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.api', 'x86');
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.ui', 'x86');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -416,10 +416,10 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(2);
 
-      expect(mockReplaceFromInDockerFile).toBeCalled();
-      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'arm');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'arm');
+      expect(mockEditDockerFile).toBeCalled();
+      expect(mockEditDockerFile).toBeCalledTimes(2);
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.api', 'arm');
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.ui', 'arm');
 
       expect(mockLoggerError).not.toBeCalled();
     });
@@ -453,10 +453,10 @@ describe('up', () => {
       expect(mockRunCommand).toBeCalled();
       expect(mockRunCommand).toBeCalledTimes(2);
 
-      expect(mockReplaceFromInDockerFile).toBeCalled();
-      expect(mockReplaceFromInDockerFile).toBeCalledTimes(2);
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.api', 'arm');
-      expect(mockReplaceFromInDockerFile).toBeCalledWith('Dockerfile.ui', 'arm');
+      expect(mockEditDockerFile).toBeCalled();
+      expect(mockEditDockerFile).toBeCalledTimes(2);
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.api', 'arm');
+      expect(mockEditDockerFile).toBeCalledWith('Dockerfile.ui', 'arm');
 
       expect(mockLoggerError).not.toBeCalled();
     });
