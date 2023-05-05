@@ -1,3 +1,7 @@
+v0.0.30
+---
+- removed dead COPY from Docker files
+ 
 v0.0.29
 ---
 
