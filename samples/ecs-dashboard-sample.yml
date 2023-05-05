@@ -8,10 +8,11 @@ Console:
         profileName: default
         # when deploying hosted version
         # AwsAccessKeyId: 
-        # AwsSecretAccessKey: 
+        # AwsSecretAccessKey:
+    UtilizationProvider:
+      type: AwsUtilizationProvider
   dashboards:
-    EcsDashboard:
-      id: EcsDashboard
+    Ecs Dashboard:
       parameters:
         - name: clusterName
           default: ENTER CLUSTER NAME HERE
@@ -26,7 +27,17 @@ Console:
         - $ref: '#/Console/widgets/Metrics'
         - $ref: '#/Console/widgets/Logs'
         - $ref: '#/Console/widgets/UsefulCommands'
+    Utilization and Cost:
+      route: utilization-and-cost
+      widgets: 
+        - $ref: '#/Console/widgets/AwsUtilizationRecommendations'
   widgets:
+    AwsUtilizationRecommendations:
+      type: AwsUtilizationRecommendations
+      displayName: TinyStacks Recommendations
+      providers: 
+        - $ref: '#/Console/providers/AwsLocalProvider'
+        - $ref: '#/Console/providers/UtilizationProvider'
     EcsInfo:
       type: AwsEcsInfo
       displayName: Service Information
@@ -278,3 +289,5 @@ Console:
     AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-widgets'
     AwsEcsInfo:               '@tinystacks/ops-aws-core-widgets'
     AwsEcsDeployments:        '@tinystacks/ops-aws-core-widgets'
+    AwsUtilizationProvider:        '@tinystacks/ops-aws-utilization-widgets'
+    AwsUtilizationRecommendations: '@tinystacks/ops-aws-utilization-widgets'
