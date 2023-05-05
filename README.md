@@ -13,6 +13,8 @@ Visit [docs.tinystacks.com](https://docs.tinystacks.com) for our full set of doc
 
 The platform comes with default plugins that offer a variety of features such as widgets for AWS ECS services and deployments, IAM JSON Policy viewers, and an AWS CLI, among others. The widgets are interactive and can exchange information, which enables the creation of dynamic and robust dashboards. With a provider and plugin model, developers can customize and extend the Ops Console as much as they wish. The [samples/](https://github.com/tinystacks/opsconsole/tree/main/samples) folder includes several samples of dashboards that can be configured via YAML.
 
+https://user-images.githubusercontent.com/6458766/236583833-da8493ae-bd81-4205-aa8e-c4c9d687ec4f.mp4
+
 ### What problems is the Ops Console intended to serve? 
 
 1. Cloud sprawl is real - modern cloud applications are built with hundreds of cloud services and resources. It's tough to manage the sprawl. 
