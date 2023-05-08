@@ -4,7 +4,7 @@ import { S3 } from '@aws-sdk/client-s3';
 import { ChildProcess } from 'child_process';
 import isNil from 'lodash.isnil';
 import logger from '../../logger';
-import { isPortAvailable, logAndThrow, editDockerFile, runCommand, runCommandSync, streamToFile, validateCwdPermissions } from '../../utils/os';
+import { isPortAvailable, logAndThrow, editDockerFile, runCommand, runCommandSync, streamToFile } from '../../utils/os';
 import { ImageArchitecture, UpOptions } from '../../types';
 import { DEFAULT_CONFIG_FILENAME, Platform, SEP } from '../../constants';
 import { parseConfig, validateDependencies } from '../../utils/config';
@@ -70,26 +70,28 @@ async function getDependencies (file: string, parentDirectory: string) {
 }
 
 async function pullDockerFiles (tag: string) {
-  validateCwdPermissions();
-
-  const s3Client = new S3({
-    signer: { sign: async (request: any) => request },
-    region: 'us-west-2'
-  });
-  const apiRes = await s3Client.getObject({
-    Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
-    Key: 'Dockerfile.api'
-  });
-  const uiRes = await s3Client.getObject({
-    Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
-    Key: 'Dockerfile.ui'
-  });
-
-  await streamToFile(apiRes.Body, Platform.ApiFilePath);
-  await streamToFile(uiRes.Body, Platform.UiFilePath);
+  try {
+    const s3Client = new S3({
+      signer: { sign: async (request: any) => request },
+      region: 'us-west-2'
+    });
+    const apiRes = await s3Client.getObject({
+      Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
+      Key: 'Dockerfile.api'
+    });
+    const uiRes = await s3Client.getObject({
+      Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
+      Key: 'Dockerfile.ui'
+    });
   
-  editDockerFile(Platform.ApiFilePath, tag);
-  editDockerFile(Platform.UiFilePath, tag);
+    await streamToFile(apiRes.Body, Platform.ApiFilePath);
+    await streamToFile(uiRes.Body, Platform.UiFilePath);
+  
+    editDockerFile(Platform.ApiFilePath, tag);
+    editDockerFile(Platform.UiFilePath, tag);
+  } catch (e) {
+    logAndThrow('Ops Console requires read and write permissions for the current working directory', e);
+  }
 }
 
 async function startNetwork () {

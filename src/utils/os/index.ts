@@ -161,5 +161,4 @@ export function validateCwdPermissions () {
   } catch (e) {
     logAndThrow('Ops Console requires read and write permissions for the current working directory', e);
   }
-
 }
