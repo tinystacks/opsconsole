@@ -1,3 +1,7 @@
+v0.0.33
+---
+- Add note on system user permissions to README
+ 
 v0.0.32
 ---
 Add readme vid
