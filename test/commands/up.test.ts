@@ -179,6 +179,44 @@ describe('up', () => {
     expect(mockLoggerError).toBeCalledTimes(1);
     expect(mockLoggerError).toBeCalledWith('opsconsole up failed! To debug further, please run with the -V, --verbose flag', logAndThrowError);
   });
+  it ('logs and throws an error if unable to write to Docker files', async () => {
+    mockResolve.mockReturnValue('./config.yml');
+    mockExistsSync.mockReturnValue(true);
+    mockDirname.mockReturnValue('./');
+    mockBasename.mockReturnValue('config.yml');
+    mockReadFileSync.mockReturnValue('');
+    mockIsPortAvailable.mockResolvedValue(true);
+    mockLoad.mockReturnValue({});
+    mockParseConfig.mockResolvedValue({ dependencies: {} });
+    mockValidateDependencies.mockResolvedValue(undefined);
+    mockGetObject.mockResolvedValue({ Body: '' });
+    const mockError = new Error('Error');
+    mockStreamToFile.mockRejectedValue(mockError)
+    const logAndThrowError = new Error('Error');
+    mockLogAndThrow.mockImplementation(() => { throw logAndThrowError });
+
+    await up({});
+
+    expect(mockResolve).toBeCalled();
+    expect(mockResolve).toBeCalledWith(`${process.cwd()}/${DEFAULT_CONFIG_FILENAME}`);
+
+    expect(mockExistsSync).toBeCalled();
+    expect(mockExistsSync).toBeCalledWith('./config.yml');
+    
+    expect(mockDirname).toBeCalled();
+    expect(mockDirname).toBeCalledWith('./config.yml');
+    
+    expect(mockBasename).toBeCalled();
+    expect(mockBasename).toBeCalledWith('./config.yml');
+
+    expect(mockLogAndThrow).toBeCalled();
+    expect(mockLogAndThrow).toBeCalledTimes(1);
+    expect(mockLogAndThrow).toBeCalledWith('Ops Console requires read and write permissions for the current working directory', mockError);
+
+    expect(mockLoggerError).toBeCalled();
+    expect(mockLoggerError).toBeCalledTimes(1);
+    expect(mockLoggerError).toBeCalledWith('opsconsole up failed! To debug further, please run with the -V, --verbose flag', logAndThrowError);
+  });
   it('logs and throws an error if the network fails to start', async () => {
     mockResolve.mockReturnValue('./config.yml');
     mockExistsSync.mockReturnValue(true);
