@@ -1,3 +1,7 @@
+v0.0.35
+---
+update version of ops-core
+ 
 v0.0.34
 ---
 - added read/write permissions validation to cwd so Docker files can be written
