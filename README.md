@@ -93,6 +93,8 @@ To use the default installation, you need to have [docker installed](https://doc
 
 **Windows users** must have Docker Desktop running.
 
+You system user also needs read/write access to the directory that contains your config file; typically this is also the directory where you are running the opsconsole.
+
 Also please make sure that ports 8000 and 3000 are open, as those ports are used by the [API](https://github.com/tinystacks/ops-api) and [frontend](https://github.com/tinystacks/ops-frontend). If these ports are reserved, you can pull down the docker images for each of these packages and change the docker run to map ports separately.
 
 ## Install from the Global NPM registry
