@@ -13,6 +13,8 @@ Visit [docs.tinystacks.com](https://docs.tinystacks.com) for our full set of doc
 
 The platform comes with default plugins that offer a variety of features such as widgets for AWS ECS services and deployments, IAM JSON Policy viewers, and an AWS CLI, among others. The widgets are interactive and can exchange information, which enables the creation of dynamic and robust dashboards. With a provider and plugin model, developers can customize and extend the Ops Console as much as they wish. The [samples/](https://github.com/tinystacks/opsconsole/tree/main/samples) folder includes several samples of dashboards that can be configured via YAML.
 
+https://user-images.githubusercontent.com/6458766/236583833-da8493ae-bd81-4205-aa8e-c4c9d687ec4f.mp4
+
 ### What problems is the Ops Console intended to serve? 
 
 1. Cloud sprawl is real - modern cloud applications are built with hundreds of cloud services and resources. It's tough to manage the sprawl. 
@@ -90,6 +92,8 @@ opsconsole up;
 To use the default installation, you need to have [docker installed](https://docs.docker.com/get-docker/).
 
 **Windows users** must have Docker Desktop running.
+
+You system user also needs read/write access to the directory that contains your config file; typically this is also the directory where you are running the opsconsole.
 
 Also please make sure that ports 8000 and 3000 are open, as those ports are used by the [API](https://github.com/tinystacks/ops-api) and [frontend](https://github.com/tinystacks/ops-frontend). If these ports are reserved, you can pull down the docker images for each of these packages and change the docker run to map ports separately.
 
