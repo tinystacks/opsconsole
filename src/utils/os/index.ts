@@ -154,3 +154,11 @@ export async function isPortAvailable (port: number): Promise<boolean> {
     s.listen(port);
   });
 }
+
+export function validateCwdPermissions () {
+  try {
+    fs.accessSync(process.cwd(), fs.constants.R_OK | fs.constants.W_OK);
+  } catch (e) {
+    logAndThrow('Ops Console requires read and write permissions for the current working directory', e);
+  }
+}

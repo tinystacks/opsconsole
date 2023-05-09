@@ -9,6 +9,7 @@ const mockWriteFileSync = jest.fn();
 const mockCreateWriteStream = jest.fn();
 const mockLoggerVerbose = jest.fn();
 const mockCreateServer = jest.fn();
+const mockAccessSync = jest.fn();
 
 jest.mock('child_process', () => {
   const {
@@ -30,11 +31,16 @@ jest.mock('../../src/logger', () => ({
   verbose: mockLoggerVerbose
 }));
 
-jest.mock('fs', () => ({
-  readFileSync: mockReadFileSync,
-  writeFileSync: mockWriteFileSync,
-  createWriteStream: mockCreateWriteStream
-}));
+jest.mock('fs', () => {
+  const original = jest.requireActual('fs');
+  return {
+    ...original,
+    readFileSync: mockReadFileSync,
+    writeFileSync: mockWriteFileSync,
+    createWriteStream: mockCreateWriteStream,
+    accessSync: mockAccessSync
+  };
+});
 
 jest.mock('net', () => ({
   createServer: mockCreateServer
@@ -47,7 +53,7 @@ import {
   isPortAvailable,
   logAndThrow,
   editDockerFile,
-  runCommand, runCommandSync, sleep, streamToFile, streamToString
+  runCommand, runCommandSync, sleep, streamToFile, streamToString, validateCwdPermissions
 } from '../../src/utils/os';
 import { Readable } from 'stream';
 import { ExecSignalError } from '../../src/errors';
@@ -530,6 +536,26 @@ describe('os utils', () => {
       const response = await resultPromise;
 
       expect(response).toEqual(true);
+    });
+  });
+
+  describe('validateCwdPermissions', () => {
+    it('cwd does not have read and write permissions', () => {
+      const mockError = new Error('Error!');
+      const errorMessage = 'Ops Console requires read and write permissions for the current working directory';
+      mockAccessSync.mockImplementation(() => { throw mockError });
+      let thrownError;
+      try {
+        validateCwdPermissions();
+      } catch (e) {
+        thrownError = e;
+      } finally {
+        expect(mockLoggerError).toBeCalled();
+        expect(mockLoggerError).toBeCalledTimes(1);
+        expect(mockLoggerError).toBeCalledWith(errorMessage, mockError);
+
+        expect(thrownError).toEqual(new Error(errorMessage));
+      }
     });
   });
 });

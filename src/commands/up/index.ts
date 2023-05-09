@@ -70,22 +70,28 @@ async function getDependencies (file: string, parentDirectory: string) {
 }
 
 async function pullDockerFiles (tag: string) {
-  const s3Client = new S3({
-    signer: { sign: async (request: any) => request },
-    region: 'us-west-2'
-  });
-  const apiRes = await s3Client.getObject({
-    Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
-    Key: 'Dockerfile.api'
-  });
-  await streamToFile(apiRes.Body, Platform.ApiFilePath);
-  editDockerFile(Platform.ApiFilePath, tag);
-  const uiRes = await s3Client.getObject({
-    Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
-    Key: 'Dockerfile.ui'
-  });
-  await streamToFile(uiRes.Body, Platform.UiFilePath);
-  editDockerFile(Platform.UiFilePath, tag);
+  try {
+    const s3Client = new S3({
+      signer: { sign: async (request: any) => request },
+      region: 'us-west-2'
+    });
+    const apiRes = await s3Client.getObject({
+      Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
+      Key: 'Dockerfile.api'
+    });
+    const uiRes = await s3Client.getObject({
+      Bucket: 'ops-stacks-config-storage-bucket-us-west-2',
+      Key: 'Dockerfile.ui'
+    });
+  
+    await streamToFile(apiRes.Body, Platform.ApiFilePath);
+    await streamToFile(uiRes.Body, Platform.UiFilePath);
+  
+    editDockerFile(Platform.ApiFilePath, tag);
+    editDockerFile(Platform.UiFilePath, tag);
+  } catch (e) {
+    logAndThrow('Ops Console requires read and write permissions for the current working directory', e);
+  }
 }
 
 async function startNetwork () {
