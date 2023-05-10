@@ -1,3 +1,7 @@
+v0.0.36
+---
+Add cost and util to sample aws dash
+ 
 v0.0.35
 ---
 update version of ops-core
