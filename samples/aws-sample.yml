@@ -6,15 +6,20 @@ Console:
       type: AwsCredentialsProvider
       credentials:
         profileName: default
+    UtilizationProvider:
+      type: AwsUtilizationProvider
   dashboards:
-    LayoutDashboard:
+    Aws Dashboard:
       route: main
       widgets:
         - $ref: '#/Console/widgets/SmallMarkdown'
         - $ref: '#/Console/widgets/Metrics'
         - $ref: '#/Console/widgets/Logs'
         - $ref: '#/Console/widgets/BillingCommands'
-      id: LayoutDashboard
+    Cost and Utilization:
+      route: cost-and-utilization
+      widgets: 
+        - $ref: '#/Console/widgets/AwsUtilizationRecommendations'
   widgets:
     SmallMarkdown:
       id: SmallMarkdown
@@ -124,6 +129,12 @@ Console:
       providers:
         - $ref: '#/Console/providers/AwsLocalProvider'
       children: []
+    AwsUtilizationRecommendations:
+      type: AwsUtilizationRecommendations
+      displayName: TinyStacks Recommendations
+      providers: 
+        - $ref: '#/Console/providers/AwsLocalProvider'
+        - $ref: '#/Console/providers/UtilizationProvider'
   dependencies:
     Markdown: '@tinystacks/ops-core-widgets'
     Tabs: '@tinystacks/ops-core-widgets'
@@ -133,3 +144,5 @@ Console:
     AwsCloudWatchLogs: '@tinystacks/ops-aws-core-widgets'
     AwsCredentialsProvider: '@tinystacks/ops-aws-core-widgets'
     AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-widgets'
+    AwsUtilizationProvider:        '@tinystacks/ops-aws-utilization-widgets'
+    AwsUtilizationRecommendations: '@tinystacks/ops-aws-utilization-widgets'
