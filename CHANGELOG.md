@@ -1,3 +1,7 @@
+v0.0.37
+---
+Add toc to README
+ 
 v0.0.36
 ---
 Add cost and util to sample aws dash
