@@ -33,6 +33,8 @@
     - [opsconsole](#opsconsole)
     - [opsconsole init](#opsconsole-init)
     - [opsconsole up](#opsconsole-up)
+- [Contributions](#contributions)
+- [Community](#community)
 
 # Introduction
 
