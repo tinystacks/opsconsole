@@ -1,3 +1,41 @@
+# Table of Contents
+- [Introduction](#introduction)
+- [Roadmap](#roadmap)
+- [Getting Started](#getting-started)
+  - [Quick Installation](#quick-installation)
+  - [Run a Sample Dashboard](#run-a-sample-dashboard)
+    - [AWS](#aws)
+    - [Basic](#basic)
+- [Installation](#installation)
+  - [Pre-requisites](#pre-requisites)
+  - [Install from the Global NPM registry](#install-from-the-global-npm-registry)
+  - [Hosted Deployment](#hosted-deployment)
+- [Dashboards](#dashboards)
+  - [Concepts](#concepts)
+  - [Sample Dashboards](#sample-dashboards)
+    - [Basic Layout](#basic-layout-link)
+    - [AWS Dashboard](#aws-dashboard-link)
+    - [ECS Dashboard](#ecs-dashboard-link)
+    - [SQS Dashboard](#sqs-dashboard-link)
+  - [Core widgets](#core-widgets-link)
+  - [AWS widgets](#aws-widgets-link)
+  - [Constants](#constants)
+  - [Parameters](#parameters)
+  - [Providers](#providers)
+    - [AWS](#aws-1)
+    - [Enabling Providers in CLI](#enabling-providers-in-cli)
+  - [Customizing Dashboards](#customizing-dashboards)
+    - [Using widgets](#using-widgets)
+    - [Using providers](#using-providers)
+    - [Sharing data between widgets](#sharing-data-between-widgets)
+- [Reference](#reference)
+  - [CLI Commands](#cli-commands)
+    - [opsconsole](#opsconsole)
+    - [opsconsole init](#opsconsole-init)
+    - [opsconsole up](#opsconsole-up)
+- [Contributions](#contributions)
+- [Community](#community)
+
 # Introduction
 
 Ops Console is an open-source console for cloud operations that delivers a dashboard and workflow engine so developers can organize resources in sensible ways, view key service metadata in one place and automate cloud workflows. With a low-code, widget-based approach, developers can design custom dashboards and workflows and even build their own custom widgets.
@@ -35,7 +73,7 @@ Our founders spent six years at AWS and witnessed thousands of customer issues t
 
 Developers can connect their cloud accounts and organize resources in sensible ways providing immediate cloud comprehensibility. Developers can then build dashboards with common widgets for deployments, environment variables, logs, alarms and even write their own. Teams can share and run operational scripts via the CLI widget embedded directly in the relavent dashboards. 
 
-## Roadmap
+# Roadmap
 - [x] CLI widget to save and run scripts
 - [x] Executable actions within widgets (ex. kill task for AWS ECS)
 - [x] Hosted dashboards via `opsconsole deploy` 
@@ -56,18 +94,18 @@ Developers can connect their cloud accounts and organize resources in sensible w
     * [ ] Backstage 
     * [ ] Grafana
 
-## Getting started
+# Getting started
 Follow installation instructions below to get the CLI installed.
 
-### Installation
+## Quick Installation
 ```bash
 # Install CLI
 npm i -g @tinystacks/opsconsole;
 
 # Make sure you have Docker installed and ports 3000 and 8000 open.
 ```
-### Run a sample dashboard 
-#### AWS
+## Run a sample dashboard 
+### AWS
 
 The [opsconsole repository](https://github.com/tinystacks/opsconsole/tree/main/samples) includes multiple sample dashboards. As an example, it includes a sample dashboard that has ECS and AWS account info. To use that, follow these steps:
 
@@ -79,7 +117,7 @@ curl https://raw.githubusercontent.com/tinystacks/opsconsole/main/samples/ecs-da
 
 opsconsole up -c ecs-dashboard-sample.yml
 ```
-#### Basic
+### Basic
 For a very basic dashboard that contains all the default layout elements, simply run:
 ```
 opsconsole init;
@@ -323,3 +361,6 @@ To view the API reference for the backend server that backs the Ops Console, see
 
 # Contributions
 See CONTRIBUTING.md.
+
+# Community
+Join our [discord](https://discord.gg/AZZzdGVCNW) to have a chat!
