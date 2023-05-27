@@ -16,6 +16,8 @@ Console:
       type: AwsCredentialsProvider
       credentials:
         profile: $const.profileName
+    UtilizationProvider:
+      type: AwsUtilizationProvider
   dashboards:
     Main:
       description: 'Monitor a queue and triage stalled messages.'
@@ -26,6 +28,11 @@ Console:
         - $ref: '#/Console/widgets/MainQueue'
         - $ref: '#/Console/widgets/DeadLetterQueueMetrics'
         - $ref: '#/Console/widgets/DeadLetterQueue'
+    Cost and Utilization:
+      route: cost-and-utilization
+      description: 'Scale down, optimize, or delete unused and underutilized resources with ease.'
+      widgets: 
+        - $ref: '#/Console/widgets/AwsUtilizationRecommendations'
   widgets:
     MainQueueMetrics:
       type: Grid
@@ -274,7 +281,6 @@ Console:
           dimensions:
             - key: QueueName
               value: $const.deadLetterQueueName
-    
     DeadLetterQueue:
       id: DeadLetterQueue
       type: Tabs
@@ -364,9 +370,18 @@ Console:
       providers:
         - $ref: '#/Console/providers/AwsCredentialsProvider'
       children: []
+    AwsUtilizationRecommendations:
+      type: AwsUtilizationRecommendations
+      displayName: TinyStacks Recommendations
+      providers: 
+        - $ref: '#/Console/providers/AwsCredentialsProvider'
+        - $ref: '#/Console/providers/UtilizationProvider'
   dependencies:
     AwsCloudWatchMetricGraph: '@tinystacks/ops-aws-core-widgets'
     AwsCredentialsProvider: '@tinystacks/ops-aws-core-widgets'
     Cli: '@tinystacks/ops-core-widgets'
     Grid: '@tinystacks/ops-core-widgets'
     Tabs: '@tinystacks/ops-core-widgets'
+    AwsUtilizationProvider:        '@tinystacks/ops-aws-utilization-widgets'
+    AwsUtilizationRecommendations: '@tinystacks/ops-aws-utilization-widgets'
+

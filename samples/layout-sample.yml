@@ -3,6 +3,7 @@ Console:
   providers: {}
   dashboards:
     LayoutDashboard:
+      description: Markdown and basic layout examples. Easy, default gettting-started dashboard.
       route: main
       widgets:
         - $ref: '#/Console/widgets/SmallMarkdown'

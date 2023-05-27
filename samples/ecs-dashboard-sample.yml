@@ -1,5 +1,15 @@
 Console:
   name: console
+  constants:
+    region:
+      value: us-east-1
+      description: AWS region
+    clusterName:
+      value: ENTER CLUSTER NAME HERE
+      description: ECS Cluster Name
+    serviceName:
+      value: ENTER SERVICE NAME HERE
+      description: ECS Service Name
   providers:
     AwsLocalProvider:
       id: AwsLocalProvider
@@ -14,13 +24,6 @@ Console:
   dashboards:
     Ecs Dashboard:
       description: 'Monitor ECS logs, metrics, deployments, and status in real time. Update environments and manage Tasks.'
-      parameters:
-        - name: clusterName
-          default: ENTER CLUSTER NAME HERE
-        - name: serviceName
-          default: ENTER SERVICE NAME HERE
-        - name: region
-          default: us-east-1
       route: main
       widgets:
         - $ref: '#/Console/widgets/EcsInfo'
@@ -45,9 +48,9 @@ Console:
       displayName: Service Information
       providers:
         - $ref: '#/Console/providers/AwsLocalProvider'
-      region: $param.region
-      clusterName: $param.clusterName
-      serviceName: $param.serviceName
+      region: $const.region
+      clusterName: $const.clusterName
+      serviceName: $const.serviceName
     EcsDeployments:
       type: AwsEcsDeployments
       displayName: Service Deployments
@@ -56,8 +59,8 @@ Console:
       region:
         $ref: '#/Console/widgets/EcsInfo'
         path: region
-      clusterName: $param.clusterName
-      serviceName: $param.serviceName
+      clusterName: $const.clusterName
+      serviceName: $const.serviceName
     Logs:
       type: AwsCloudWatchLogs
       displayName: Service Logs
@@ -100,27 +103,27 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
         - metricNamespace: AWS/ECS
           metricName: CPUUtilization
           metricDisplayName: 'Max'
           statistic: Maximum
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
         - metricNamespace: AWS/ECS
           metricName: CPUUtilization
           metricDisplayName: 'Min'
           statistic: Minimum
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
     MemoryMetrics:
       type: AwsCloudWatchMetricGraph
       displayName: Memory Utilization Details
@@ -140,27 +143,27 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
         - metricNamespace: AWS/ECS
           metricName: MemoryUtilization
           metricDisplayName: 'Max'
           statistic: Maximum
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
         - metricNamespace: AWS/ECS
           metricName: MemoryUtilization
           metricDisplayName: 'Min'
           statistic: Minimum
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
     Capacity:
       type: AwsCloudWatchMetricGraph
       displayName: Capacity
@@ -180,27 +183,27 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
         - metricNamespace: ECS/ContainerInsights
           metricName: PendingTaskCount
           metricDisplayName: 'Pending Tasks'
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
         - metricNamespace: ECS/ContainerInsights
           metricName: DesiredTaskCount
           metricDisplayName: 'Desired Tasks'
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
     Reservations:
       type: AwsCloudWatchMetricGraph
       displayName: Resource Reservations
@@ -220,18 +223,18 @@ Console:
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
         - metricNamespace: ECS/ContainerInsights
           metricName: MemoryReserved
           metricDisplayName: 'Memory Reserved'
           statistic: Average
           dimensions:
             - key: ClusterName
-              value: $param.clusterName
+              value: $const.clusterName
             - key: ServiceName
-              value: $param.serviceName
+              value: $const.serviceName
     UsefulCommands:
       type: Tabs
       displayName: Useful ECS Commands
@@ -249,8 +252,8 @@ Console:
       providers:
         - $ref: '#/Console/providers/AwsLocalProvider'
       environmentVariables:
-        AWS_REGION: $param.region
-        CLUSTER_NAME: $param.clusterName
+        AWS_REGION: $const.region
+        CLUSTER_NAME: $const.clusterName
         CONTAINER_NAME:
           $ref: '#/Console/widgets/EcsInfo'
           path: images[0].containerId
@@ -262,8 +265,8 @@ Console:
       providers:
         - $ref: '#/Console/providers/AwsLocalProvider'
       environmentVariables:
-        AWS_REGION: $param.region
-        CLUSTER_NAME: $param.clusterName
+        AWS_REGION: $const.region
+        CLUSTER_NAME: $const.clusterName
         CONTAINER_NAME:
           $ref: '#/Console/widgets/EcsInfo'
           path: images[0].containerId
@@ -275,8 +278,8 @@ Console:
       providers:
         - $ref: '#/Console/providers/AwsLocalProvider'
       environmentVariables:
-        AWS_REGION: $param.region
-        CLUSTER_NAME: $param.clusterName
+        AWS_REGION: $const.region
+        CLUSTER_NAME: $const.clusterName
         CONTAINER_NAME:
           $ref: '#/Console/widgets/EcsInfo'
           path: images[0].containerId
