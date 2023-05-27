@@ -11,6 +11,8 @@ Console:
   dashboards:
     Aws Dashboard:
       route: main
+      description: >
+        Monitor EC2 instances in real-time, analyze performance metrics, and gain insights from CloudWatch logs
       widgets:
         - $ref: '#/Console/widgets/SmallMarkdown'
         - $ref: '#/Console/widgets/Metrics'
