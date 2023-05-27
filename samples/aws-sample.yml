@@ -11,8 +11,7 @@ Console:
   dashboards:
     Aws Dashboard:
       route: main
-      description: >
-        Monitor EC2 instances in real-time, analyze performance metrics, and gain insights from CloudWatch logs
+      description: 'Monitor EC2 instances in real-time, analyze performance metrics, and gain insights from CloudWatch logs'
       widgets:
         - $ref: '#/Console/widgets/SmallMarkdown'
         - $ref: '#/Console/widgets/Metrics'
@@ -20,6 +19,7 @@ Console:
         - $ref: '#/Console/widgets/BillingCommands'
     Cost and Utilization:
       route: cost-and-utilization
+      description: 'Scale down, optimize, or delete unused and underutilized resources with ease.'
       widgets: 
         - $ref: '#/Console/widgets/AwsUtilizationRecommendations'
   widgets:
