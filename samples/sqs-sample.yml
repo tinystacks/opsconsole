@@ -18,6 +18,7 @@ Console:
         profile: $const.profileName
   dashboards:
     Main:
+      description: 'Monitor a queue and triage stalled messages.'
       route: main
       id: Main
       widgets:
