@@ -4,15 +4,12 @@ Console:
     region:
       value: us-east-1
       description: AWS region
-    profileName:
-      value: default
-      description: AWS profile name
   providers:
     AwsLocalProvider:
       id: AwsLocalProvider
       type: AwsCredentialsProvider
       credentials:
-        profileName: $const.profileName
+        profileName: default
     UtilizationProvider:
       type: AwsUtilizationProvider
   dashboards:
