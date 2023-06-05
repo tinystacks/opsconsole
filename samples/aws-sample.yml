@@ -1,5 +1,9 @@
 Console:
   name: console
+  constants:
+    region:
+      value: us-east-1
+      description: AWS region
   providers:
     AwsLocalProvider:
       id: AwsLocalProvider
@@ -11,6 +15,7 @@ Console:
   dashboards:
     Aws Dashboard:
       route: main
+      description: 'Monitor EC2 instances in real-time, analyze performance metrics, and gain insights from CloudWatch logs'
       widgets:
         - $ref: '#/Console/widgets/SmallMarkdown'
         - $ref: '#/Console/widgets/Metrics'
@@ -18,6 +23,7 @@ Console:
         - $ref: '#/Console/widgets/BillingCommands'
     Cost and Utilization:
       route: cost-and-utilization
+      description: 'Scale down, optimize, or delete unused and underutilized resources with ease.'
       widgets: 
         - $ref: '#/Console/widgets/AwsUtilizationRecommendations'
   widgets:
@@ -90,7 +96,7 @@ Console:
       timeRange:
         time: 12
         unit: h
-      region: us-east-1
+      region: $const.region
       providers:
         - $ref: '#/Console/providers/AwsLocalProvider'
       children: []
@@ -112,7 +118,7 @@ Console:
       timeRange:
         time: 12
         unit: h
-      region: us-east-1
+      region: $const.region
       providers:
         - $ref: '#/Console/providers/AwsLocalProvider'
       children: []
@@ -120,7 +126,7 @@ Console:
       id: Logs
       type: AwsCloudWatchLogs
       displayName: Service Logs
-      region: us-east-1
+      region: $const.region
       logGroupName: INSERT_LOG_GROUP_NAME_HERE
       timeRange:
         time: 12
