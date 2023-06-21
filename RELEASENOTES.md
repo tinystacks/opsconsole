@@ -1,1 +1,1 @@
-
+Add instructions to start the console after it's initialized using a template
