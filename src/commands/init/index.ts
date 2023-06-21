@@ -74,7 +74,7 @@ async function init (options: InitOptions = {}) {
     const updatedConfigYaml = yaml.dump({ Console: updatedConfigJson });
     const destFilePath = `./${DEFAULT_CONFIG_FILENAME}`;
     fs.writeFileSync(destFilePath, updatedConfigYaml);
-    logger.success(`Successfully initialized config file from template ${path.basename(template)}!`);
+    logger.success(`Successfully initialized config file from template ${path.basename(template)}!\nTo start the console, run 'opsconsole up -c config.yml'`);
   } catch (e) {
     logger.error(`Error initializing config file: ${e}`);
   }

@@ -69,7 +69,7 @@ describe('init', () => {
     expect(mockWriteFileSync).toBeCalledWith('./config.yml', mockConfigYaml);
     
     expect(mockLoggerSucces).toBeCalled()
-    expect(mockLoggerSucces).toBeCalledWith('Successfully initialized config file from template layout-sample.yml!');
+    expect(mockLoggerSucces).toBeCalledWith(`Successfully initialized config file from template layout-sample.yml!\nTo start the console, run 'opsconsole up -c config.yml'`);
   });
   it('creates config from specified template if passed', async () => {
     const configPath = './template.yml';
@@ -99,7 +99,7 @@ describe('init', () => {
     expect(mockWriteFileSync).toBeCalledWith('./config.yml', mockConfigYaml);
     
     expect(mockLoggerSucces).toBeCalled()
-    expect(mockLoggerSucces).toBeCalledWith('Successfully initialized config file from template template.yml!');
+    expect(mockLoggerSucces).toBeCalledWith(`Successfully initialized config file from template template.yml!\nTo start the console, run 'opsconsole up -c config.yml'`);
   });
   it('prompts for constant values in template', async () => {
     const configPath = './template.yml';
@@ -211,7 +211,7 @@ describe('init', () => {
     expect(mockWriteFileSync).toBeCalledWith('./config.yml', mockConfigYaml);
     
     expect(mockLoggerSucces).toBeCalled();
-    expect(mockLoggerSucces).toBeCalledWith('Successfully initialized config file from template template.yml!');
+    expect(mockLoggerSucces).toBeCalledWith(`Successfully initialized config file from template template.yml!\nTo start the console, run 'opsconsole up -c config.yml'`);
   });
   it('logs error if one occurs', async () => {
     const mockError = new Error('Error!');
