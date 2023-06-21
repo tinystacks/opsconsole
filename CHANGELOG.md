@@ -1,3 +1,7 @@
+v0.0.40
+---
+Add instructions to start the console after it's initialized using a template
+ 
 v0.0.39
 ---
 
